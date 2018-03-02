@@ -1,0 +1,20 @@
+# Spring Properties
+spring:
+  application:
+     name: publisher-service
+
+# Discovery Server Access
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:1111/eureka/
+
+# HTTP Server
+server:
+  port: 3333   # HTTP (Tomcat) port
+
+dhis2:
+  apiEndPoint: http://dhis.pgim.cmb.ac.lk/nss/api/
+  username: chathura
+  password: Chathura123
+  programId: MmGml1Gyb7K
