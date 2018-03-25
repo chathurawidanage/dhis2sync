@@ -2,6 +2,20 @@
 spring:
   application:
      name: publisher-service
+  h2:
+     console:
+        enabled: true
+        path: /h2
+  datasource:
+      url: jdbc:h2:file:~/dhis2-sync
+      username: admin
+      password: admin
+      driver-class-name: org.h2.Driver
+  jpa:
+      hibernate:
+        ddl-auto: update
+
+
 
 # Discovery Server Access
 eureka:
@@ -17,4 +31,4 @@ dhis2:
   apiEndPoint: http://dhis.pgim.cmb.ac.lk/nss/api/
   username: chathura
   password: Chathura123
-  programId: MmGml1Gyb7K
+  config: config.json

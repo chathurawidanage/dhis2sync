@@ -19,12 +19,7 @@
         <module>dhis2syncpublisher</module>
         <module>dhis2common</module>
     </modules>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
+    <properties>
+        <dhis2.sync.version>1.0-SNAPSHOT</dhis2.sync.version>
+    </properties>
 </project>

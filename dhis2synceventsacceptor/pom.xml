@@ -10,6 +10,15 @@
     <modelVersion>4.0.0</modelVersion>
     <name>Events Acceptor</name>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
     <artifactId>dhis2-com.cwidanage.dhis2.sync-events-acceptor</artifactId>
     <dependencies>
         <dependency>

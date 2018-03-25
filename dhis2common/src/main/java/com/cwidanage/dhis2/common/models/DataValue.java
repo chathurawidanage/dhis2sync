@@ -10,14 +10,14 @@ import javax.persistence.Id;
  * @author Chathura Widanage
  */
 @Entity
-public class Coordinate {
+public class DataValue {
 
     @Id
     @GenericGenerator(name = "uuid", strategy = "uuid2")
     @GeneratedValue(generator = "uuid")
     private String id;
-    private double latitude;
-    private double longitude;
+    private String dataElement;
+    private String value;
 
     public String getId() {
         return id;
@@ -27,19 +27,19 @@ public class Coordinate {
         this.id = id;
     }
 
-    public double getLatitude() {
-        return latitude;
+    public String getDataElement() {
+        return dataElement;
     }
 
-    public void setLatitude(double latitude) {
-        this.latitude = latitude;
+    public void setDataElement(String dataElement) {
+        this.dataElement = dataElement;
     }
 
-    public double getLongitude() {
-        return longitude;
+    public String getValue() {
+        return value;
     }
 
-    public void setLongitude(double longitude) {
-        this.longitude = longitude;
+    public void setValue(String value) {
+        this.value = value;
     }
 }
