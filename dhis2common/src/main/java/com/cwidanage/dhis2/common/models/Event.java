@@ -1,5 +1,9 @@
 package com.cwidanage.dhis2.common.models;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.GenericGenerator;
+
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
@@ -11,10 +15,14 @@ import java.util.List;
 public class Event {
 
     @Id
-    private String event;
+    @GenericGenerator(name = "uuid", strategy = "uuid2")
+    @GeneratedValue(generator = "uuid")
+    private String id;
+    private String event;//event id in DHIS2
     private String program;
     private String programStage;
     private String orgUnit;
+    private String status;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private Coordinate coordinate;
@@ -23,8 +31,25 @@ public class Event {
 
     private String trackedEntityInstance;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
     private List<DataValue> dataValues;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
     public String getEvent() {
         return event;
@@ -96,5 +121,22 @@ public class Event {
 
     public void setDataValues(List<DataValue> dataValues) {
         this.dataValues = dataValues;
+    }
+
+    @Override
+    public String toString() {
+        return "Event{" +
+                "id='" + id + '\'' +
+                ", event='" + event + '\'' +
+                ", program='" + program + '\'' +
+                ", programStage='" + programStage + '\'' +
+                ", orgUnit='" + orgUnit + '\'' +
+                ", status='" + status + '\'' +
+                ", coordinate=" + coordinate +
+                ", eventDate=" + eventDate +
+                ", lastUpdated=" + lastUpdated +
+                ", trackedEntityInstance='" + trackedEntityInstance + '\'' +
+                ", dataValues=" + dataValues +
+                '}';
     }
 }

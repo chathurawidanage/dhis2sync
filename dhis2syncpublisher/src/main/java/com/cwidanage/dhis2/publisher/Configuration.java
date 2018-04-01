@@ -15,7 +15,13 @@ public class Configuration {
 
     private List<Program> programs;
 
+    private String instanceId;
+
     private Configuration() {
+    }
+
+    public String getInstanceId() {
+        return instanceId;
     }
 
     public static Configuration buildByFile(File file) throws IOException {
@@ -25,9 +31,5 @@ public class Configuration {
 
     public List<Program> getPrograms() {
         return programs;
-    }
-
-    public void setPrograms(List<Program> programs) {
-        this.programs = programs;
     }
 }

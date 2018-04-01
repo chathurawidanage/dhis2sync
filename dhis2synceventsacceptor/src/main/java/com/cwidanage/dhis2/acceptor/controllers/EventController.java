@@ -16,7 +16,7 @@ public class EventController {
     }
 
     @RequestMapping("/test")
-    public String test() {
+        public String test() {
         return eventService.getTest();
     }
 }

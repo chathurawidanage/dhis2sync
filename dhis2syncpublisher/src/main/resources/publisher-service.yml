@@ -7,10 +7,14 @@ spring:
         enabled: true
         path: /h2
   datasource:
-      url: jdbc:h2:file:~/dhis2-sync
+      url: jdbc:h2:file:~/dhis2-sync-client
       username: admin
       password: admin
       driver-class-name: org.h2.Driver
+  activemq:
+        broker-url: tcp://localhost:61616
+        user: admin
+        password: admin
   jpa:
       hibernate:
         ddl-auto: update
@@ -32,3 +36,4 @@ dhis2:
   username: chathura
   password: Chathura123
   config: config.json
+  deliveryReportQueue: DNMS_event_delivery_reports
