@@ -12,8 +12,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import javax.jms.JMSException;
-
 /**
  * @author Chathura Widanage
  */
@@ -43,5 +41,7 @@ public class EventPublisherService {
                 logger.error("Error in sending event to server : {}", transmittableEvent, jmsException);
             }
         });
+
+        //todo retry events which didn't receive a delivery report
     }
 }

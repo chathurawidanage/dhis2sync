@@ -1,0 +1,17 @@
+@import "~@blueprintjs/core/lib/css/blueprint.css";
+@import "~@blueprintjs/icons/lib/css/blueprint-icons.css";
+@import "~normalize.css/normalize.css";
+
+.app {
+  display: grid;
+  grid-template-rows: 50px auto;
+
+  .app-content {
+    display: grid;
+    grid-template-columns: 250px auto;
+
+    .app-content-ui {
+      padding: 15px;
+    }
+  }
+}

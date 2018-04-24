@@ -23,7 +23,9 @@ public class EventDeliveryReportListener {
     public void onDeliverReport(EventDeliverReport eventDeliverReport) {
         logger.debug("Received delivery report for {}", eventDeliverReport.getTransmittableEventId());
         TransmittableEvent transmittableEvent = transmittableEventService.getById(eventDeliverReport.getTransmittableEventId());
-        TransmittableEvent acceptedEvent = transmittableEventService.transformStatus(transmittableEvent, TransmittableEventStatus.ACCEPTED_BY_UPSTREAM);
-        transmittableEventService.save(acceptedEvent);
+        if (transmittableEvent != null) {
+            TransmittableEvent acceptedEvent = transmittableEventService.transformStatus(transmittableEvent, TransmittableEventStatus.ACCEPTED_BY_UPSTREAM);
+            transmittableEventService.save(acceptedEvent);
+        }
     }
 }

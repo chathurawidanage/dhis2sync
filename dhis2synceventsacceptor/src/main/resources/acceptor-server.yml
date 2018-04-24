@@ -2,6 +2,10 @@
 spring:
   application:
      name: acceptor-service
+  h2:
+       console:
+          enabled: true
+          path: /h2
   activemq:
       broker-url: tcp://localhost:61616
       user: admin
@@ -11,6 +15,9 @@ spring:
         username: admin
         password: admin
         driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
 
 
 # Discovery Server Access
