@@ -58,7 +58,10 @@ export class SyncDataElementsComponent extends React.Component {
 
         return (
             <div>
-                <Button onClick={this.showNewDialog} text="Create New Sync Data Element"/>
+                <h2>Sync Data Elements</h2>
+                <div>
+                    <Button onClick={this.showNewDialog} text="New Sync Data Element" style={{float: 'right'}}/>
+                </div>
 
                 <NewSyncDataElementPopup onElementAdded={this.onElementAdded}
                                          onClose={this.closeDialog}
@@ -69,7 +72,7 @@ export class SyncDataElementsComponent extends React.Component {
                     <tr>
                         <th>ID</th>
                         <th>Code</th>
-                        <th>Data Element</th>
+                        <th>Data Element Name</th>
                     </tr>
                     </thead>
                     <tbody>

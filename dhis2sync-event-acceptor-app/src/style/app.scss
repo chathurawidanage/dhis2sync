@@ -2,9 +2,18 @@
 @import "~@blueprintjs/icons/lib/css/blueprint-icons.css";
 @import "~normalize.css/normalize.css";
 
+body {
+  min-height: 100vh;
+
+  #root {
+    height: 100%;
+  }
+}
+
 .app {
   display: grid;
-  grid-template-rows: 50px auto;
+  grid-template-rows: 50px auto 40px;
+  min-height: 100%;
 
   .app-content {
     display: grid;
@@ -13,5 +22,10 @@
     .app-content-ui {
       padding: 15px;
     }
+  }
+
+  .app-footer {
+    text-align: center;
+    padding-top: 11px;
   }
 }

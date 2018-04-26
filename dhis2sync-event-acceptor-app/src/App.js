@@ -12,6 +12,8 @@ import {
     MenuDivider
 } from "@blueprintjs/core";
 import {SyncDataElementsComponent} from "./components/SyncDataElements/SyncDataElementsComponent";
+import {Link, Route} from "react-router-dom";
+import DHIS2InstancesManager from "./components/DHIS2Instances/DHIS2InstancesManager";
 
 class App extends Component {
     render() {
@@ -27,15 +29,23 @@ class App extends Component {
                 </Navbar>
                 <div className="app-content">
                     <Menu className="pt-elevation-1 app-content-sidebar">
-                        <MenuItem icon="new-text-box" onClick={this.handleClick} text="New text box"/>
-                        <MenuItem icon="new-object" onClick={this.handleClick} text="New object"/>
+                        <Link to="/dataElements">
+                            <MenuItem icon="new-text-box" text="Data Elements"/>
+                        </Link>
+                        <Link to="/dhis2Instances">
+                            <MenuItem icon="new-object" onClick={this.handleClick} text="DHIS2 Instances"/>
+                        </Link>
                         <MenuItem icon="new-link" onClick={this.handleClick} text="New link"/>
                         <MenuDivider/>
                         <MenuItem text="Settings..." icon="cog"/>
                     </Menu>
                     <div className="app-content-ui">
-                        <SyncDataElementsComponent/>
+                        <Route path="/dataElements" component={SyncDataElementsComponent}/>
+                        <Route path="/dhis2Instances" component={DHIS2InstancesManager}/>
                     </div>
+                </div>
+                <div className="app-footer">
+                    &copy; HISP Sri Lanka
                 </div>
             </div>
         );
