@@ -1,8 +1,11 @@
 package com.cwidanage.dhis2.common.models.dhis2;
 
+import javax.persistence.MappedSuperclass;
+
 /**
  * @author Chathura Widanage
  */
+@MappedSuperclass
 public class ProgramStage {
 
     private String id;

@@ -1,7 +1,7 @@
 package com.cwidanage.dhis2.acceptor.controllers;
 
 
-import com.cwidanage.dhis2.common.models.SyncDataElement;
+import com.cwidanage.dhis2.common.models.sync.SyncDataElement;
 import com.cwidanage.dhis2.common.services.SyncDataElementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;

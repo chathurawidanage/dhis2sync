@@ -1,8 +1,11 @@
-package com.cwidanage.dhis2.common.models;
+package com.cwidanage.dhis2.common.models.sync;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
+/**
+ * @author Chathura Widanage
+ */
 @Entity
 public class SyncDataElement {
 

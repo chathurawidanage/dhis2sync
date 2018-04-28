@@ -1,9 +1,9 @@
 package com.cwidanage.dhis2.acceptor.controllers;
 
 
-import com.cwidanage.dhis2.common.models.DHIS2Instance;
-import com.cwidanage.dhis2.common.models.SyncDataElement;
-import com.cwidanage.dhis2.common.services.DHIS2InstanceService;
+import com.cwidanage.dhis2.common.models.MetaDataResponse;
+import com.cwidanage.dhis2.common.models.sync.DHIS2Instance;
+import com.cwidanage.dhis2.acceptor.services.DHIS2InstanceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,6 +26,7 @@ public class DHIS2InstanceController {
     @RequestMapping(path = {"", "/"}, method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
     public DHIS2Instance save(@RequestBody DHIS2Instance dhis2Instance) {
         //todo get metadata
+        MetaDataResponse metaDataResponse = this.dhis2InstanceService.fetchMetaData(dhis2Instance);
         return this.dhis2InstanceService.save(dhis2Instance);
     }
 }

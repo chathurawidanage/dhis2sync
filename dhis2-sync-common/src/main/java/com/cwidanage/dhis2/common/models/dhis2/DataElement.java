@@ -1,12 +1,13 @@
 package com.cwidanage.dhis2.common.models.dhis2;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
 
-@Entity
+/**
+ * @author Chathura Widanage
+ */
+@MappedSuperclass
 public class DataElement {
 
-    @Id
     private String id;
 
     private String displayName;

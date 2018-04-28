@@ -1,15 +1,10 @@
-package com.cwidanage.dhis2.common.models;
-
-import javax.persistence.Entity;
-import javax.persistence.Id;
+package com.cwidanage.dhis2.common.models.dhis2;
 
 /**
  * @author Chathura Widanage
  */
-@Entity
 public class TrackedEntityInstance {
 
-    @Id
     private String trackedEntityInstance;
     private String trackedEntity;
     private String orgUnit;

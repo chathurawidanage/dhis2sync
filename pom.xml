@@ -14,10 +14,10 @@
         <version>Edgware.SR2</version>  <!-- Name of release train -->
     </parent>
     <modules>
-        <module>dhis2synceventsacceptor</module>
-        <module>dhis2syncserviceregistry</module>
-        <module>dhis2syncpublisher</module>
-        <module>dhis2common</module>
+        <module>dhis2-sync-events-acceptor</module>
+        <module>dhis2-sync-service-registry</module>
+        <module>dhis2-sync-event-publisher</module>
+        <module>dhis2-sync-common</module>
     </modules>
     <properties>
         <log4j.version>2.11.0</log4j.version>
