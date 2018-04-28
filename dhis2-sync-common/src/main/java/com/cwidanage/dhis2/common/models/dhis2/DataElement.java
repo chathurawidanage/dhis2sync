@@ -1,4 +1,4 @@
-package com.cwidanage.dhis2.common.models;
+package com.cwidanage.dhis2.common.models.dhis2;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;

@@ -1,8 +1,7 @@
 package com.cwidanage.dhis2.publisher;
 
-import com.cwidanage.dhis2.common.models.Program;
+import com.cwidanage.dhis2.common.models.dhis2.Program;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.io.File;
 import java.io.IOException;

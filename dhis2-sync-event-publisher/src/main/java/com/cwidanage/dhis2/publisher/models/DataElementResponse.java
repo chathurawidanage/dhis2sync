@@ -1,6 +1,6 @@
 package com.cwidanage.dhis2.publisher.models;
 
-import com.cwidanage.dhis2.common.models.DataElement;
+import com.cwidanage.dhis2.common.models.dhis2.DataElement;
 
 import java.util.List;
 

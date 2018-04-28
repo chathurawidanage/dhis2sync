@@ -4,6 +4,9 @@ import com.cwidanage.dhis2.common.models.Event;
 
 import java.util.List;
 
+/**
+ * @author Chathura Widanage
+ */
 public class EventsResponse {
 
     private Pager pager;

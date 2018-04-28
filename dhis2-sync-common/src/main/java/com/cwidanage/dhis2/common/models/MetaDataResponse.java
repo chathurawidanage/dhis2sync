@@ -1,6 +1,7 @@
 package com.cwidanage.dhis2.common.models;
 
-import com.cwidanage.dhis2.common.models.DataElement;
+import com.cwidanage.dhis2.common.models.dhis2.DataElement;
+import com.cwidanage.dhis2.common.models.dhis2.ProgramStage;
 
 import java.util.List;
 
@@ -8,6 +9,15 @@ public class MetaDataResponse {
 
     private String instanceId;
     private List<DataElement> dataElements;
+    private List<ProgramStage> programStages;
+
+    public List<ProgramStage> getProgramStages() {
+        return programStages;
+    }
+
+    public void setProgramStages(List<ProgramStage> programStages) {
+        this.programStages = programStages;
+    }
 
     public String getInstanceId() {
         return instanceId;

@@ -1,9 +1,8 @@
 package com.cwidanage.dhis2.publisher.services;
 
-import com.cwidanage.dhis2.common.models.DataElement;
+import com.cwidanage.dhis2.common.models.dhis2.DataElement;
 import com.cwidanage.dhis2.publisher.Configuration;
 import com.cwidanage.dhis2.publisher.models.DataElementResponse;
-import com.cwidanage.dhis2.publisher.models.EventsResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +12,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class DataElementService {

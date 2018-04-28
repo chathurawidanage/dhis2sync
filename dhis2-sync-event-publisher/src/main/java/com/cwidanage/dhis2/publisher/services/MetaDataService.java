@@ -10,9 +10,14 @@ public class MetaDataService {
     @Autowired
     private DataElementService dataElementService;
 
+    @Autowired
+    private ProgramStageService programStageService;
+
     public MetaDataResponse requestAllMetaData() {
         MetaDataResponse metaDataResponse = new MetaDataResponse();
         metaDataResponse.setDataElements(dataElementService.getAllDataElements());
+        metaDataResponse.setProgramStages(programStageService.getAllProgramStages());
+
         return metaDataResponse;
     }
 }

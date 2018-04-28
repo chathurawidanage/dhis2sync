@@ -1,12 +1,23 @@
-package com.cwidanage.dhis2.common.models;
+package com.cwidanage.dhis2.common.models.dhis2;
+
+import java.util.List;
 
 /**
  * @author Chathura Widanage
  */
-public class ProgramStage {
+public class Program {
 
     private String id;
     private String displayName;
+    private List<ProgramStage> programStages;
+
+    public List<ProgramStage> getProgramStages() {
+        return programStages;
+    }
+
+    public void setProgramStages(List<ProgramStage> programStages) {
+        this.programStages = programStages;
+    }
 
     public String getId() {
         return id;
