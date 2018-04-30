@@ -10,4 +10,6 @@ import org.springframework.data.repository.CrudRepository;
 public interface DHIS2InstanceProgramStageRepository extends CrudRepository<DHIS2InstanceProgramStage, String> {
 
     Iterable<DHIS2InstanceProgramStage> findByDhis2Instance(DHIS2Instance dhis2Instance);
+
+    DHIS2InstanceProgramStage findByDhis2Instance_IdAndId();
 }

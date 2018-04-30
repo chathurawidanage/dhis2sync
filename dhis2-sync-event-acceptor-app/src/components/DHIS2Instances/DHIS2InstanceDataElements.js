@@ -101,10 +101,9 @@ export default class DHIS2InstanceDataElements extends React.Component {
                                         onChange={(event) => {
                                             this.onChangeMapping(de.identifier, event.target.value)
                                         }}>
-                                    <option>....</option>
+                                    <option>NO MAPPING</option>
                                     {this.state.syncDataElements.map(sde => {
-                                        return <option value={sde.code} key={sde.code}>{sde.displayName}
-                                            &nbsp;[{sde.code}]</option>
+                                        return <option value={sde.code} key={sde.code}>{sde.displayName}</option>
                                     })}
                                 </select>
                             </div>

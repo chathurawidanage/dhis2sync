@@ -4,6 +4,8 @@ import axios from "axios";
 import {getUrl} from "../../Constants";
 import NewDHIS2InstancePopup from "./NewDHIS2InstancePopup";
 import {Link} from "react-router-dom";
+import {showErrorToast} from "../../utils/ToastUtils";
+import {extractAxiosError} from "../../utils/AxiosUtils";
 
 /**
  * @author Chathura Widanage
@@ -31,6 +33,7 @@ export default class DHIS2InstancesManager extends React.Component {
             })
             .catch(err => {
                 console.error("Error in fetching dhis2 instances", err);
+                showErrorToast(`Error in fetching dhis2 instances : ${extractAxiosError(err)}`)
             })
     };
 
@@ -75,6 +78,7 @@ export default class DHIS2InstancesManager extends React.Component {
                         <th>ID</th>
                         <th>URL</th>
                         <th>Description</th>
+                        <th>Sync Status</th>
                         <th></th>
                     </tr>
                     </thead>
@@ -85,6 +89,7 @@ export default class DHIS2InstancesManager extends React.Component {
                                 <td>{instance.id}</td>
                                 <td>{instance.url}</td>
                                 <td>{instance.description}</td>
+                                <td>{instance.syncEnabled ? "STARTED" : "STOPPED"}</td>
                                 <td>
                                     <Link to={"/dhis2Instances/" + instance.id}
                                           className="pt-button pt-icon-cog pt-small">

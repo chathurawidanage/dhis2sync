@@ -32,12 +32,12 @@ class App extends Component {
                 <div className="app-content">
                     <Menu className="pt-elevation-1 app-content-sidebar">
                         <Link to="/dataElements">
-                            <MenuItem icon="new-text-box" text="Data Elements"/>
+                            <MenuItem icon="layers" text="Data Elements"/>
                         </Link>
                         <Link to="/dhis2Instances">
-                            <MenuItem icon="new-object" onClick={this.handleClick} text="DHIS2 Instances"/>
+                            <MenuItem icon="database" onClick={this.handleClick} text="DHIS2 Instances"/>
                         </Link>
-                        <MenuItem icon="new-link" onClick={this.handleClick} text="New link"/>
+                        <MenuItem icon="flows" onClick={this.handleClick} text="Event Routes"/>
                         <MenuDivider/>
                         <MenuItem text="Settings..." icon="cog"/>
                     </Menu>

@@ -1,5 +1,6 @@
 package com.cwidanage.dhis2.acceptor.services;
 
+import com.cwidanage.dhis2.common.exceptions.ValidationException;
 import com.cwidanage.dhis2.common.models.MetaDataResponse;
 import com.cwidanage.dhis2.common.models.dhis2.DataElement;
 import com.cwidanage.dhis2.common.models.dhis2.ProgramStage;
@@ -52,6 +53,15 @@ public class DHIS2InstanceService {
     @Transactional
     public void syncMetaData(DHIS2Instance dhis2Instance) {
         MetaDataResponse metaDataResponse = this.fetchMetaData(dhis2Instance);
+
+        //check whether instance IDs map
+        if (!dhis2Instance.getId().equals(metaDataResponse.getInstanceId())) {
+            throw new ValidationException(String.format(
+                    "Instance identifier mismatch. Found %s in target, Expected %s.",
+                    metaDataResponse.getInstanceId(),
+                    dhis2Instance.getId()
+            ));
+        }
 
         //SYNCING PROGRAM STAGES
         Map<String, DHIS2InstanceProgramStage> programStagesMap = this.di2ProgramStagesService.getProgramStagesMap(dhis2Instance);

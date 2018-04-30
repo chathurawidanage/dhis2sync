@@ -7,6 +7,8 @@ import "./DHIS2Instance.css";
 import DHIS2InstanceProgramStages from "./DHIS2InstanceProgramStages";
 import DHIS2InstanceDataElements from "./DHIS2InstanceDataElements";
 import {AppToaster} from "../../App";
+import {showErrorToast, showSuccessToast} from "../../utils/ToastUtils";
+import {extractAxiosError} from "../../utils/AxiosUtils";
 
 /**
  * @author Chathura Widanage
@@ -54,11 +56,13 @@ export default class DHIS2Instance extends React.Component {
                 this.setState({
                     instance: response.data
                 });
-                this.setSyncingMetaData(false)
+                this.setSyncingMetaData(false);
+                showSuccessToast("Metadata Synchronized");
             })
             .catch(err => {
                 console.error("Error in syncing meta data", err);
                 this.setSyncingMetaData(false);
+                showErrorToast(`Metadata synchronization failed : ${extractAxiosError(err)}`);
             });
     };
 
@@ -74,15 +78,12 @@ export default class DHIS2Instance extends React.Component {
                 this.setState({
                     instance: {...this.state.instance, syncEnabled: !this.state.instance.syncEnabled}
                 }, () => {
-                    AppToaster.show({
-                        message: `Instance Syncing ${this.state.instance.syncEnabled ? 'started.' : 'stopped.'}`,
-                        intent: Intent.SUCCESS
-                    });
+                    showSuccessToast(`Instance Syncing ${this.state.instance.syncEnabled ? 'started.' : 'stopped.'}`);
                 });
             })
             .catch(err => {
                 console.error("Error in toggling sync status", err);
-                AppToaster.show({message: `Failed : ${err.message}`, intent: Intent.DANGER});
+                showErrorToast(`Failed : ${err.message}`);
             });
     };
 
@@ -137,7 +138,7 @@ export default class DHIS2Instance extends React.Component {
                                 <td>{this.state.instance.dataElements.length}</td>
                             </tr>
                             <tr>
-                                <td>Status</td>
+                                <td>Sync Status</td>
                                 <td>{this.state.instance.syncEnabled ? 'STARTED' : 'STOPPED'}</td>
                             </tr>
                             </tbody>

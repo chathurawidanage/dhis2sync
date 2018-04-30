@@ -3,6 +3,8 @@ import axios from "axios";
 import {getUrl, SERVER_URL} from "../../Constants";
 import NewSyncDataElementPopup from "./NewSyncDataElementPopup";
 import {Button} from "@blueprintjs/core";
+import {showErrorToast} from "../../utils/ToastUtils";
+import {extractAxiosError} from "../../utils/AxiosUtils";
 
 export class SyncDataElementsComponent extends React.Component {
     constructor(props) {
@@ -22,10 +24,11 @@ export class SyncDataElementsComponent extends React.Component {
             .then(response => {
                 this.setState({
                     syncDataElements: response.data
-                })
+                });
             })
             .catch(err => {
                 console.error(err);
+                showErrorToast(extractAxiosError(err));
             })
     };
 
