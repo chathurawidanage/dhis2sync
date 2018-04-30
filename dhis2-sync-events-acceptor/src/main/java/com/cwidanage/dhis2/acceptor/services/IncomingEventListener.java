@@ -1,12 +1,12 @@
 package com.cwidanage.dhis2.acceptor.services;
 
+import com.cwidanage.dhis2.common.constants.EventTripStatus;
 import com.cwidanage.dhis2.common.constants.TransmittableEventStatus;
-import com.cwidanage.dhis2.common.models.EventDeliverReport;
 import com.cwidanage.dhis2.common.models.TransmittableEvent;
+import com.cwidanage.dhis2.common.services.EventTripService;
 import com.cwidanage.dhis2.common.services.TransmittableEventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
-import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
 
 /**
@@ -19,14 +19,23 @@ public class IncomingEventListener {
     private TransmittableEventService transmittableEventService;
 
     @Autowired
-    private JmsTemplate jmsTemplate;
+    private EventTripService eventTripService;
 
-    @JmsListener(destination = "incoming_events", containerFactory = "myFactory")
+    @JmsListener(destination = "incoming_events", containerFactory = "jmsListenerFactory")
     public void onEvent(TransmittableEvent transmittableEvent) {
-        TransmittableEvent statusTransformedEvent = this.transmittableEventService.transformStatus(transmittableEvent, TransmittableEventStatus.ACCEPTED_BY_UPSTREAM);
-        transmittableEventService.save(statusTransformedEvent);
-        EventDeliverReport eventDeliverReport = new EventDeliverReport();
-        eventDeliverReport.setTransmittableEventId(transmittableEvent.getId());
-        jmsTemplate.convertAndSend(String.format("%s_event_delivery_reports", transmittableEvent.getInstanceId()), eventDeliverReport);
+        //check if this is an update
+        TransmittableEvent subject = transmittableEventService.getById(transmittableEvent.getId());
+        if (subject != null) {
+            subject.setEvent(transmittableEvent.getEvent());
+            this.transmittableEventService.transformStatus(subject, TransmittableEventStatus.UPDATED, null);
+            //reset trips
+            subject.getEventTrips().forEach(eventTrip -> eventTripService.transformStatus(
+                    eventTrip, EventTripStatus.INITIALIZED, "Reinitializing due to an update")
+            );
+        } else {
+            subject = transmittableEvent;
+        }
+        this.transmittableEventService.transformStatus(subject, TransmittableEventStatus.ACCEPTED_BY_UPSTREAM, null);
+        transmittableEventService.save(subject);
     }
 }

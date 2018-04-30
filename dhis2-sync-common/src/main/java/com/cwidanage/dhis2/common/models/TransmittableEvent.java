@@ -1,6 +1,8 @@
 package com.cwidanage.dhis2.common.models;
 
 import com.cwidanage.dhis2.common.constants.TransmittableEventStatus;
+import com.cwidanage.dhis2.common.models.sync.DHIS2Instance;
+import com.cwidanage.dhis2.common.models.sync.EventTrip;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -11,15 +13,16 @@ import java.util.List;
 public class TransmittableEvent {
 
     @Id
-    @GenericGenerator(name = "uuid", strategy = "uuid2")
-    @GeneratedValue(generator = "uuid")
     private String id;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private Event event;
 
     //source instance
     private String instanceId;
+
+    @OneToMany(fetch = FetchType.EAGER)
+    private List<EventTrip> eventTrips = new ArrayList<>();
 
     @OneToOne(cascade = CascadeType.ALL)
     private EventStatusTransformation latestTransformation;
@@ -31,11 +34,20 @@ public class TransmittableEvent {
     }
 
     public TransmittableEvent(Event event, String instanceId) {
+        this.id = String.format("%s_%s", instanceId, event.getEvent());
         this.event = event;
         this.instanceId = instanceId;
         this.latestTransformation = new EventStatusTransformation();
         this.latestTransformation.setCurrentStatus(TransmittableEventStatus.FETCHED_FROM_SOURCE);
         this.statusTransformations.add(this.latestTransformation);
+    }
+
+    public List<EventTrip> getEventTrips() {
+        return eventTrips;
+    }
+
+    public void setEventTrips(List<EventTrip> eventTrips) {
+        this.eventTrips = eventTrips;
     }
 
     public String getId() {

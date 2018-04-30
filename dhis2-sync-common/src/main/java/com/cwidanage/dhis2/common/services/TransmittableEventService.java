@@ -29,14 +29,14 @@ public class TransmittableEventService {
         return this.repository.findAllByLatestTransformation_CurrentStatus(eventStatus);
     }
 
-    public TransmittableEvent transformStatus(TransmittableEvent transmittableEvent, TransmittableEventStatus transmittableEventStatus) {
+    public void transformStatus(TransmittableEvent transmittableEvent, TransmittableEventStatus transmittableEventStatus, String message) {
         EventStatusTransformation latestTransformation = new EventStatusTransformation();
         latestTransformation.setCurrentStatus(transmittableEventStatus);
+        latestTransformation.setMessage(message);
         if (transmittableEvent.getLatestTransformation() != null) {
             latestTransformation.setPreviousStatus(transmittableEvent.getLatestTransformation().getCurrentStatus());
         }
         transmittableEvent.setLatestTransformation(latestTransformation);
         transmittableEvent.getStatusTransformations().add(latestTransformation);
-        return this.repository.save(transmittableEvent);
     }
 }

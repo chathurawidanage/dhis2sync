@@ -16,6 +16,7 @@ import {Link, Route, Switch} from "react-router-dom";
 import DHIS2InstancesManager from "./components/DHIS2Instances/DHIS2InstancesManager";
 import DHIS2Instances from "./components/DHIS2Instances/DHIS2Instance";
 import {Toaster, Position} from "@blueprintjs/core";
+import EventRouteManager from "./components/Routes/EventRouteManager";
 
 class App extends Component {
     render() {
@@ -46,6 +47,7 @@ class App extends Component {
                             <Route path="/dataElements" component={SyncDataElementsComponent}/>
                             <Route path="/dhis2Instances/:instanceId" component={DHIS2Instances}/>
                             <Route path="/dhis2Instances" component={DHIS2InstancesManager}/>
+                            <Route path="/routes" component={EventRouteManager}/>
                         </Switch>
                     </div>
                 </div>

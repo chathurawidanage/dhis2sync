@@ -35,10 +35,12 @@ public class EventPublisherService {
             try {
                 logger.debug("Transmitting event {}", transmittableEvent);
                 jmsTemplate.convertAndSend("incoming_events", transmittableEvent);
-                transmittableEventService.transformStatus(transmittableEvent, TransmittableEventStatus.SUBMITTED_TO_UPSTREAM);
-                transmittableEventService.save(transmittableEvent);
+                transmittableEventService.transformStatus(transmittableEvent, TransmittableEventStatus.ACCEPTED_BY_UPSTREAM, null);
             } catch (JmsException jmsException) {
+                transmittableEventService.transformStatus(transmittableEvent, TransmittableEventStatus.ERROR_SENDING_TO_UPSTREAM, jmsException.getMessage());
                 logger.error("Error in sending event to server : {}", transmittableEvent, jmsException);
+            } finally {
+                transmittableEventService.save(transmittableEvent);
             }
         });
 
