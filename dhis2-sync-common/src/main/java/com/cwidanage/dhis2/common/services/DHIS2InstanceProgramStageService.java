@@ -34,6 +34,10 @@ public class DHIS2InstanceProgramStageService {
         return String.format("%s_%s", dhis2Instance.getId(), programStage.getId());
     }
 
+    public DHIS2InstanceProgramStage getByIdentifier(String identifier) {
+        return this.repository.findOne(identifier);
+    }
+
     public DHIS2InstanceProgramStage createDHIS2InstanceProgramStage(DHIS2Instance dhis2Instance, ProgramStage programStage) {
         DHIS2InstanceProgramStage d2iProgramStage = new DHIS2InstanceProgramStage();
         d2iProgramStage.setDhis2Instance(dhis2Instance);
