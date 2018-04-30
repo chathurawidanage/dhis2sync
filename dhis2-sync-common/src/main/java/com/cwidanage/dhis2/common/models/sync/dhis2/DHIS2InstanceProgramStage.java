@@ -3,6 +3,7 @@ package com.cwidanage.dhis2.common.models.sync.dhis2;
 import com.cwidanage.dhis2.common.models.dhis2.ProgramStage;
 import com.cwidanage.dhis2.common.models.sync.DHIS2Instance;
 import com.cwidanage.dhis2.common.models.sync.Syncability;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 
@@ -15,6 +16,7 @@ public class DHIS2InstanceProgramStage extends ProgramStage {
     @Id
     private String identifier;
 
+    @JsonIgnore
     @ManyToOne(optional = false)
     private DHIS2Instance dhis2Instance;
 

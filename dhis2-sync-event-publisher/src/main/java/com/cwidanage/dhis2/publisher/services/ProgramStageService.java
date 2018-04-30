@@ -38,9 +38,9 @@ public class ProgramStageService {
             uriComponentsBuilder.replaceQueryParam("page", pageToFetch);
             ResponseEntity<ProgramStagesResponse> responseEntity = restTemplate.getForEntity(uriComponentsBuilder.toUriString(), ProgramStagesResponse.class);
             pageToFetch = responseEntity.getBody().getPager().getPage() + 1;
-            totalPages = responseEntity.getBody().getPager().getTotal();
+            totalPages = responseEntity.getBody().getPager().getPageCount();
             programStages.addAll(responseEntity.getBody().getProgramStages());
-        } while (totalPages < pageToFetch);
+        } while (totalPages >= pageToFetch);
 
         return programStages;
     }

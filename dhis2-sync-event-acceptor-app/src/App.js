@@ -12,8 +12,10 @@ import {
     MenuDivider
 } from "@blueprintjs/core";
 import {SyncDataElementsComponent} from "./components/SyncDataElements/SyncDataElementsComponent";
-import {Link, Route} from "react-router-dom";
+import {Link, Route, Switch} from "react-router-dom";
 import DHIS2InstancesManager from "./components/DHIS2Instances/DHIS2InstancesManager";
+import DHIS2Instances from "./components/DHIS2Instances/DHIS2Instance";
+import {Toaster, Position} from "@blueprintjs/core";
 
 class App extends Component {
     render() {
@@ -40,8 +42,11 @@ class App extends Component {
                         <MenuItem text="Settings..." icon="cog"/>
                     </Menu>
                     <div className="app-content-ui">
-                        <Route path="/dataElements" component={SyncDataElementsComponent}/>
-                        <Route path="/dhis2Instances" component={DHIS2InstancesManager}/>
+                        <Switch>
+                            <Route path="/dataElements" component={SyncDataElementsComponent}/>
+                            <Route path="/dhis2Instances/:instanceId" component={DHIS2Instances}/>
+                            <Route path="/dhis2Instances" component={DHIS2InstancesManager}/>
+                        </Switch>
                     </div>
                 </div>
                 <div className="app-footer">
@@ -51,5 +56,10 @@ class App extends Component {
         );
     }
 }
+
+export const AppToaster = Toaster.create({
+    className: "recipe-toaster",
+    position: Position.BOTTOM_RIGHT,
+});
 
 export default App;

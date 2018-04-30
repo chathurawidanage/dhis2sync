@@ -38,9 +38,9 @@ public class DataElementService {
             uriComponentsBuilder.replaceQueryParam("page", pageToFetch);
             ResponseEntity<DataElementResponse> responseEntity = restTemplate.getForEntity(uriComponentsBuilder.toUriString(), DataElementResponse.class);
             pageToFetch = responseEntity.getBody().getPager().getPage() + 1;
-            totalPages = responseEntity.getBody().getPager().getTotal();
+            totalPages = responseEntity.getBody().getPager().getPageCount();
             dataElements.addAll(responseEntity.getBody().getDataElements());
-        } while (totalPages < pageToFetch);
+        } while (totalPages >= pageToFetch);
 
         return dataElements;
     }

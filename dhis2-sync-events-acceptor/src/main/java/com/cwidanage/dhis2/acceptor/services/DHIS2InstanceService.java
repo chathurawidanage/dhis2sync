@@ -2,10 +2,13 @@ package com.cwidanage.dhis2.acceptor.services;
 
 import com.cwidanage.dhis2.common.models.MetaDataResponse;
 import com.cwidanage.dhis2.common.models.dhis2.DataElement;
+import com.cwidanage.dhis2.common.models.dhis2.ProgramStage;
 import com.cwidanage.dhis2.common.models.sync.DHIS2Instance;
 import com.cwidanage.dhis2.common.models.sync.dhis2.DHIS2InstanceDataElement;
+import com.cwidanage.dhis2.common.models.sync.dhis2.DHIS2InstanceProgramStage;
 import com.cwidanage.dhis2.common.repositories.DHIS2InstanceRepository;
 import com.cwidanage.dhis2.common.services.DHIS2InstanceDataElementService;
+import com.cwidanage.dhis2.common.services.DHIS2InstanceProgramStageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -13,19 +16,23 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
 public class DHIS2InstanceService {
 
     @Autowired
-    private DHIS2InstanceRepository dhis2InstanceRepository;
+    private DHIS2InstanceRepository d2iRepository;
 
     @Autowired
-    private DHIS2InstanceDataElementService dhis2InstanceDataElementService;
+    private DHIS2InstanceDataElementService d2iDataElementService;
+
+    @Autowired
+    private DHIS2InstanceProgramStageService di2ProgramStagesService;
 
     public MetaDataResponse fetchMetaData(DHIS2Instance dhis2Instance) {
         RestTemplate restTemplate = new RestTemplate();
@@ -47,39 +54,65 @@ public class DHIS2InstanceService {
         MetaDataResponse metaDataResponse = this.fetchMetaData(dhis2Instance);
 
         //SYNCING PROGRAM STAGES
-
+        Map<String, DHIS2InstanceProgramStage> programStagesMap = this.di2ProgramStagesService.getProgramStagesMap(dhis2Instance);
+        List<ProgramStage> programStagesResponse = metaDataResponse.getProgramStages();
+        programStagesResponse.forEach(programStage -> {
+            String identifier = di2ProgramStagesService.generateIdentifier(dhis2Instance, programStage);
+            if (!programStagesMap.containsKey(identifier)) {
+                DHIS2InstanceProgramStage d2iProgramStage = this.di2ProgramStagesService
+                        .createDHIS2InstanceProgramStage(dhis2Instance, programStage);
+                programStagesMap.put(identifier, d2iProgramStage);
+            } else if (!programStagesMap.get(identifier).getSyncability().isEnabledBySource()) {
+                programStagesMap.get(identifier).getSyncability().setEnabledBySource(true);
+            } else {
+                programStagesMap.remove(identifier);
+            }
+        });
+        this.di2ProgramStagesService.save(new HashSet<>(programStagesMap.values()));
+        //DONE SYNCING PROGRAM STAGES
 
         //SYNCING DATA ELEMENTS
-        Map<String, DHIS2InstanceDataElement> dataElementMap = this.dhis2InstanceDataElementService.getDataElementMap(dhis2Instance);
+        Map<String, DHIS2InstanceDataElement> dataElementMap = this.d2iDataElementService.getDataElementMap(dhis2Instance);
         List<DataElement> dataElementsResponse = metaDataResponse.getDataElements();
-        List<DHIS2InstanceDataElement> dataElementsToSave = new ArrayList<>();
         dataElementsResponse.forEach(dataElement -> {
-            String identifier = dhis2InstanceDataElementService.generateIdentifier(dhis2Instance, dataElement);
+            String identifier = d2iDataElementService.generateIdentifier(dhis2Instance, dataElement);
             if (!dataElementMap.containsKey(identifier)) {
-                DHIS2InstanceDataElement dhis2InstanceDataElement = this.dhis2InstanceDataElementService
+                DHIS2InstanceDataElement d2iDataElement = this.d2iDataElementService
                         .createDHIS2InstanceDataElement(dhis2Instance, dataElement);
-                dataElementsToSave.add(dhis2InstanceDataElement);
+                dataElementMap.put(identifier, d2iDataElement);
+            } else if (!dataElementMap.get(identifier).getSyncability().isEnabledBySource()) {
+                dataElementMap.get(identifier).getSyncability().setEnabledBySource(true);
             } else {
                 dataElementMap.remove(identifier);
             }
         });
 
-        //the remaining in dataElementMap are the data elements which were turned off by respective DHIS2 admin
-        List<DHIS2InstanceDataElement> turnedOffDataElements = dataElementMap.values().stream().map(dataElementMapValue -> {
-            dataElementMapValue.getSyncability().setEnabledBySource(false);
-            return dataElementMapValue;
-        }).collect(Collectors.toList());
-        dataElementsToSave.addAll(turnedOffDataElements);
-        this.dhis2InstanceDataElementService.save(dataElementsToSave);
-
-
+        this.d2iDataElementService.save(new HashSet<>(dataElementMap.values()));
+        //DONE SYNCING DATA ELEMENTS
     }
 
+    @Transactional
+    public void syncMetaData(String id) {
+        this.syncMetaData(this.getById(id));
+    }
+
+    public void setSyncEnabled(String id, boolean enabled) {
+        DHIS2Instance instance = this.getById(id);
+        //todo check requirements if enabled=true
+        instance.setSyncEnabled(enabled);
+        this.d2iRepository.save(instance);
+    }
+
+
     public DHIS2Instance save(DHIS2Instance dhis2Instance) {
-        return this.dhis2InstanceRepository.save(dhis2Instance);
+        return this.d2iRepository.save(dhis2Instance);
     }
 
     public Iterable<DHIS2Instance> getAll() {
-        return this.dhis2InstanceRepository.findAll();
+        return this.d2iRepository.findAll();
+    }
+
+    public DHIS2Instance getById(String id) {
+        return this.d2iRepository.findOne(id);
     }
 }

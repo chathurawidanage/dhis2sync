@@ -1,8 +1,9 @@
 import React from "react";
 import {Button, ButtonGroup} from "@blueprintjs/core";
 import axios from "axios";
-import {getUrl, SERVER_URL} from "../../Constants";
+import {getUrl} from "../../Constants";
 import NewDHIS2InstancePopup from "./NewDHIS2InstancePopup";
+import {Link} from "react-router-dom";
 
 /**
  * @author Chathura Widanage
@@ -53,7 +54,10 @@ export default class DHIS2InstancesManager extends React.Component {
     render() {
         return (
             <div>
-                <h2>DHIS2 Instances</h2>
+                <ul className="pt-breadcrumbs">
+                    <li><Link className="pt-breadcrumbs-collapsed" to="/"/></li>
+                    <li><span className="pt-breadcrumb pt-breadcrumb-current">DHIS2 Instances</span></li>
+                </ul>
                 <div>
                     <ButtonGroup style={{float: 'right'}}>
                         <Button onClick={this.showNewDialog} text="New DHIS2 Instance"/>
@@ -71,6 +75,7 @@ export default class DHIS2InstancesManager extends React.Component {
                         <th>ID</th>
                         <th>URL</th>
                         <th>Description</th>
+                        <th></th>
                     </tr>
                     </thead>
                     <tbody>
@@ -80,6 +85,12 @@ export default class DHIS2InstancesManager extends React.Component {
                                 <td>{instance.id}</td>
                                 <td>{instance.url}</td>
                                 <td>{instance.description}</td>
+                                <td>
+                                    <Link to={"/dhis2Instances/" + instance.id}
+                                          className="pt-button pt-icon-cog pt-small">
+                                        Configure
+                                    </Link>
+                                </td>
                             </tr>
                         })
                     }

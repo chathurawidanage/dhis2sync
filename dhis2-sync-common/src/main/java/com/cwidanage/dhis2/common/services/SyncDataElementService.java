@@ -21,5 +21,9 @@ public class SyncDataElementService {
     public Iterable<SyncDataElement> getAll() {
         return repository.findAll();
     }
+
+    public SyncDataElement getById(String id) {
+        return this.repository.findOne(id);
+    }
 }
 

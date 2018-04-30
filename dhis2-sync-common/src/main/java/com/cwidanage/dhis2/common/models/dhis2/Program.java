@@ -1,6 +1,7 @@
 package com.cwidanage.dhis2.common.models.dhis2;
 
 import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
 import java.util.List;
 
 /**
@@ -11,6 +12,8 @@ public class Program {
 
     private String id;
     private String displayName;
+
+    @Transient
     private List<ProgramStage> programStages;
 
     public List<ProgramStage> getProgramStages() {

@@ -10,6 +10,12 @@ body {
   }
 }
 
+.text-center {
+  text-align: center !important;
+}
+
+
+
 .app {
   display: grid;
   grid-template-rows: 50px auto 40px;

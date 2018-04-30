@@ -4,7 +4,7 @@ import com.cwidanage.dhis2.common.models.sync.dhis2.DHIS2InstanceDataElement;
 import com.cwidanage.dhis2.common.models.sync.dhis2.DHIS2InstanceProgramStage;
 
 import javax.persistence.*;
-import java.util.List;
+import java.util.Set;
 
 @Entity
 public class DHIS2Instance {
@@ -18,11 +18,21 @@ public class DHIS2Instance {
 
     public boolean metaDataSynced;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<DHIS2InstanceDataElement> dataElements;
+    public Boolean syncEnabled;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<DHIS2InstanceProgramStage> programStages;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "dhis2Instance")
+    private Set<DHIS2InstanceDataElement> dataElements;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "dhis2Instance")
+    private Set<DHIS2InstanceProgramStage> programStages;
+
+    public Boolean isSyncEnabled() {
+        return syncEnabled;
+    }
+
+    public void setSyncEnabled(Boolean syncEnabled) {
+        this.syncEnabled = syncEnabled;
+    }
 
     public boolean isMetaDataSynced() {
         return metaDataSynced;
@@ -32,19 +42,19 @@ public class DHIS2Instance {
         this.metaDataSynced = metaDataSynced;
     }
 
-    public List<DHIS2InstanceProgramStage> getProgramStages() {
+    public Set<DHIS2InstanceProgramStage> getProgramStages() {
         return programStages;
     }
 
-    public void setProgramStages(List<DHIS2InstanceProgramStage> programStages) {
+    public void setProgramStages(Set<DHIS2InstanceProgramStage> programStages) {
         this.programStages = programStages;
     }
 
-    public List<DHIS2InstanceDataElement> getDataElements() {
+    public Set<DHIS2InstanceDataElement> getDataElements() {
         return dataElements;
     }
 
-    public void setDataElements(List<DHIS2InstanceDataElement> dataElements) {
+    public void setDataElements(Set<DHIS2InstanceDataElement> dataElements) {
         this.dataElements = dataElements;
     }
 

@@ -1,6 +1,6 @@
 import React from "react";
 import axios from "axios";
-import {SERVER_URL} from "../../Constants";
+import {getUrl, SERVER_URL} from "../../Constants";
 import NewSyncDataElementPopup from "./NewSyncDataElementPopup";
 import {Button} from "@blueprintjs/core";
 
@@ -18,7 +18,7 @@ export class SyncDataElementsComponent extends React.Component {
     }
 
     refreshDataElements = () => {
-        axios.get(`${SERVER_URL}syncDataElements`)
+        axios.get(`${getUrl('syncDataElements')}`)
             .then(response => {
                 this.setState({
                     syncDataElements: response.data
@@ -50,7 +50,7 @@ export class SyncDataElementsComponent extends React.Component {
     render() {
         let deRows = this.state.syncDataElements.map((de, index) => {
             return <tr key={index}>
-                <td>{index}</td>
+                <td>{index + 1}</td>
                 <td>{de.code}</td>
                 <td>{de.displayName}</td>
             </tr>
@@ -70,7 +70,7 @@ export class SyncDataElementsComponent extends React.Component {
                 <table className="pt-html-table pt-html-table-striped" style={{width: '100%'}}>
                     <thead>
                     <tr>
-                        <th>ID</th>
+                        <th>Index</th>
                         <th>Code</th>
                         <th>Data Element Name</th>
                     </tr>
