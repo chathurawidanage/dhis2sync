@@ -4,7 +4,8 @@ import com.cwidanage.dhis2.common.models.TransmittableEvent;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 public class EventTrip {
@@ -22,7 +23,7 @@ public class EventTrip {
     private EventTripStatusTransformation latestTransformation;
 
     @OneToMany(fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
-    private List<EventTripStatusTransformation> eventTripStatusTransformations;
+    private Set<EventTripStatusTransformation> eventTripStatusTransformations = new HashSet<>();
 
     private Date lastUpdate;
 
@@ -58,11 +59,11 @@ public class EventTrip {
         this.latestTransformation = latestTransformation;
     }
 
-    public List<EventTripStatusTransformation> getEventTripStatusTransformations() {
+    public Set<EventTripStatusTransformation> getEventTripStatusTransformations() {
         return eventTripStatusTransformations;
     }
 
-    public void setEventTripStatusTransformations(List<EventTripStatusTransformation> eventTripStatusTransformations) {
+    public void setEventTripStatusTransformations(Set<EventTripStatusTransformation> eventTripStatusTransformations) {
         this.eventTripStatusTransformations = eventTripStatusTransformations;
     }
 

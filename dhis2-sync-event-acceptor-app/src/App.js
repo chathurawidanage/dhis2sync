@@ -31,14 +31,16 @@ class App extends Component {
                     </NavbarGroup>
                 </Navbar>
                 <div className="app-content">
-                    <Menu className="pt-elevation-1 app-content-sidebar">
+                    <Menu className="app-content-sidebar">
                         <Link to="/dataElements">
                             <MenuItem icon="layers" text="Data Elements"/>
                         </Link>
                         <Link to="/dhis2Instances">
                             <MenuItem icon="database" onClick={this.handleClick} text="DHIS2 Instances"/>
                         </Link>
-                        <MenuItem icon="flows" onClick={this.handleClick} text="Event Routes"/>
+                        <Link to="/routes">
+                            <MenuItem icon="flows" onClick={this.handleClick} text="Event Routes"/>
+                        </Link>
                         <MenuDivider/>
                         <MenuItem text="Settings..." icon="cog"/>
                     </Menu>

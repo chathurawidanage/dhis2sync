@@ -11,5 +11,5 @@ public interface DHIS2InstanceProgramStageRepository extends CrudRepository<DHIS
 
     Iterable<DHIS2InstanceProgramStage> findByDhis2Instance(DHIS2Instance dhis2Instance);
 
-    DHIS2InstanceProgramStage findByDhis2Instance_IdAndId();
+    DHIS2InstanceProgramStage findByDhis2Instance_IdAndId(String instanceId, String programStageId);
 }

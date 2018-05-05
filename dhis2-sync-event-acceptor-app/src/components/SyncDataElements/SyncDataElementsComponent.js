@@ -5,6 +5,7 @@ import NewSyncDataElementPopup from "./NewSyncDataElementPopup";
 import {Button} from "@blueprintjs/core";
 import {showErrorToast} from "../../utils/ToastUtils";
 import {extractAxiosError} from "../../utils/AxiosUtils";
+import {Link} from "react-router-dom";
 
 export class SyncDataElementsComponent extends React.Component {
     constructor(props) {
@@ -61,7 +62,10 @@ export class SyncDataElementsComponent extends React.Component {
 
         return (
             <div>
-                <h2>Sync Data Elements</h2>
+                <ul className="pt-breadcrumbs">
+                    <li><Link className="pt-breadcrumbs-collapsed" to="/"/></li>
+                    <li><span className="pt-breadcrumb pt-breadcrumb-current">Sync Data Elements</span></li>
+                </ul>
                 <div>
                     <Button onClick={this.showNewDialog} text="New Sync Data Element" style={{float: 'right'}}/>
                 </div>

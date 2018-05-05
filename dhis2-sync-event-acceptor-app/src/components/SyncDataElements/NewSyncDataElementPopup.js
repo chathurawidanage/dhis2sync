@@ -1,8 +1,7 @@
 import React from "react";
-import {Dialog, Button, FormGroup, Intent} from "@blueprintjs/core";
+import {Button, Dialog, FormGroup} from "@blueprintjs/core";
 import axios from "axios";
 import {SERVER_URL} from "../../Constants";
-import {AppToaster} from "../../App";
 import {extractAxiosError} from "../../utils/AxiosUtils";
 import {showErrorToast, showSuccessToast} from "../../utils/ToastUtils";
 

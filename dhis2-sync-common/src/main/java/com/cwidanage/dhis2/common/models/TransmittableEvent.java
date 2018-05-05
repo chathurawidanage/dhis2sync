@@ -7,7 +7,9 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 public class TransmittableEvent {
@@ -22,7 +24,7 @@ public class TransmittableEvent {
     private String instanceId;
 
     @OneToMany(fetch = FetchType.EAGER)
-    private List<EventTrip> eventTrips = new ArrayList<>();
+    private Set<EventTrip> eventTrips = new HashSet<>();
 
     @OneToOne(cascade = CascadeType.ALL)
     private EventStatusTransformation latestTransformation;
@@ -42,11 +44,11 @@ public class TransmittableEvent {
         this.statusTransformations.add(this.latestTransformation);
     }
 
-    public List<EventTrip> getEventTrips() {
+    public Set<EventTrip> getEventTrips() {
         return eventTrips;
     }
 
-    public void setEventTrips(List<EventTrip> eventTrips) {
+    public void setEventTrips(Set<EventTrip> eventTrips) {
         this.eventTrips = eventTrips;
     }
 

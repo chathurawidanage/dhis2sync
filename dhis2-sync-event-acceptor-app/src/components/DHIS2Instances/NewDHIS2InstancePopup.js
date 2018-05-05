@@ -1,10 +1,9 @@
 import React from "react";
-import {Dialog, Button, FormGroup} from "@blueprintjs/core";
+import {Dialog, FormGroup} from "@blueprintjs/core";
 import axios from "axios";
-import {getUrl, SERVER_URL} from "../../Constants";
+import {getUrl} from "../../Constants";
 import {showErrorToast, showSuccessToast} from "../../utils/ToastUtils";
 import {extractAxiosError} from "../../utils/AxiosUtils";
-import {Spinner} from "@blueprintjs/core/lib/cjs/components/spinner/spinner";
 import ButtonWithSpinner from "../common/ButtonWithSpinner";
 
 export default class NewDHIS2InstancePopup extends React.Component {
