@@ -51,4 +51,19 @@ public class EventRoute {
     public void setDestination(DHIS2InstanceProgramStage destination) {
         this.destination = destination;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        EventRoute that = (EventRoute) o;
+
+        return id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
 }

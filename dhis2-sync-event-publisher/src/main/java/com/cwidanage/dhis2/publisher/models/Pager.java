@@ -38,4 +38,14 @@ public class Pager {
     public void setPageSize(int pageSize) {
         this.pageSize = pageSize;
     }
+
+    @Override
+    public String toString() {
+        return "Pager{" +
+                "page=" + page +
+                ", pageCount=" + pageCount +
+                ", total=" + total +
+                ", pageSize=" + pageSize +
+                '}';
+    }
 }

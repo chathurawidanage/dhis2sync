@@ -1,9 +1,8 @@
 package com.cwidanage.dhis2.publisher.services;
 
-import com.cwidanage.dhis2.common.models.MetaDataResponse;
+import com.cwidanage.dhis2.common.models.rest.MetaDataResponse;
 import com.cwidanage.dhis2.publisher.Configuration;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service

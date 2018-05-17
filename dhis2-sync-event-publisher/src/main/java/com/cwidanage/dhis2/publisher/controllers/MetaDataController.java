@@ -1,6 +1,6 @@
 package com.cwidanage.dhis2.publisher.controllers;
 
-import com.cwidanage.dhis2.common.models.MetaDataResponse;
+import com.cwidanage.dhis2.common.models.rest.MetaDataResponse;
 import com.cwidanage.dhis2.publisher.services.MetaDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;

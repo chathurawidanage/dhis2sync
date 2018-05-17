@@ -54,7 +54,7 @@ public class EventFetchService {
     public void fetch() {
 
         Setting lastFetchedDateSetting = this.settingService.getValue(SETTING_LAST_FETCHED_DATE);
-        final String lastFetchedDate = lastFetchedDateSetting != null ? lastFetchedDateSetting.getValue() : "1990-01-01";
+        final String lastFetchedDate = lastFetchedDateSetting != null ? lastFetchedDateSetting.getValue() : "2018-05-15";
         String nextFetchDate = simpleDateFormat.format(new Date());
         logger.debug("Last fetch date of events : {}", lastFetchedDate);
 
@@ -82,8 +82,9 @@ public class EventFetchService {
                 do {
                     logger.debug("Fetching page {} of events from {}", pageToFetch, lastFetchedDate);
                     EventsResponse eventsResponse = this.fetchPage(uriComponentsBuilder, pageToFetch);
-                    totalPages = eventsResponse.getPager().getTotal();
+                    totalPages = eventsResponse.getPager().getPageCount();
                     pageToFetch = eventsResponse.getPager().getPage() + 1;
+                    System.out.println(eventsResponse.getPager());
                     List<TransmittableEvent> transmittableEvents = eventsResponse.getEvents()
                             .stream()
                             .map(event -> new TransmittableEvent(event, this.configuration.getInstanceId()))

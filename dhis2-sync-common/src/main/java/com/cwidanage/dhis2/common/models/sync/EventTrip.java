@@ -16,7 +16,7 @@ public class EventTrip {
     @ManyToOne(optional = false)
     private EventRoute eventRoute;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     private TransmittableEvent transmittableEvent;
 
     @OneToOne
@@ -78,5 +78,20 @@ public class EventTrip {
     @PreUpdate
     public void updateLastUpdate() {
         this.lastUpdate = new Date();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        EventTrip eventTrip = (EventTrip) o;
+
+        return id.equals(eventTrip.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
     }
 }

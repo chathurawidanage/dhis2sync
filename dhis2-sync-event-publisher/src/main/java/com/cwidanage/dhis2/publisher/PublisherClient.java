@@ -2,11 +2,9 @@ package com.cwidanage.dhis2.publisher;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.autoconfigure.jms.DefaultJmsListenerContainerFactoryConfigurer;
-import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -31,10 +29,7 @@ import java.util.List;
 @EntityScan(basePackages = "com.cwidanage")
 @SpringBootApplication
 @EnableJms
-@EnableDiscoveryClient
 public class PublisherClient {
-    public static final String ACCEPTOR_SERVICE_URL
-            = "http://ACCEPTOR-SERVICE";
 
     @Value("${dhis2.username}")
     private String dhis2Username;

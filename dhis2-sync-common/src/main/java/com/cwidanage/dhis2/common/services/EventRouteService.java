@@ -16,6 +16,10 @@ public class EventRouteService {
     @Autowired
     private DHIS2InstanceProgramStageService d2iProgramStageService;
 
+    public Iterable<EventRoute> getAll() {
+        return repository.findAll();
+    }
+
     public EventRoute save(EventRoute eventRoute) {
         return this.repository.save(eventRoute);
     }
@@ -51,4 +55,13 @@ public class EventRouteService {
         return eventRoute;
     }
 
+    public EventRoute toggleSync(String routeId) {
+        EventRoute eventRoute = this.repository.findOne(routeId);
+        eventRoute.setEnableSync(!eventRoute.isEnableSync());
+        return this.repository.save(eventRoute);
+    }
+
+    public Iterable<EventRoute> getRoutesForSource(String sourceInstanceId, String sourceProgramStageId) {
+        return this.repository.findAllBySource_Dhis2Instance_IdAndSource_Id(sourceInstanceId, sourceProgramStageId);
+    }
 }

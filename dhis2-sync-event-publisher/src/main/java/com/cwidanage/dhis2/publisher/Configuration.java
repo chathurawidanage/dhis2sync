@@ -16,7 +16,13 @@ public class Configuration {
 
     private String instanceId;
 
+    private String trackedEntityIdentifier;
+
     private Configuration() {
+    }
+
+    public String getTrackedEntityIdentifier() {
+        return trackedEntityIdentifier;
     }
 
     public String getInstanceId() {

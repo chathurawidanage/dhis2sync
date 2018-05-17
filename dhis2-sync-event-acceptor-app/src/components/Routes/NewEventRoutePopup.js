@@ -30,20 +30,19 @@ export default class NewEventRoutePopup extends React.Component {
 
     onSaveClicked = () => {
         this.setSavingInProgress(true);
-        axios.post(`${getUrl('dhis2Instances')}`,
+        axios.post(`${getUrl('eventRoutes')}`,
             {
-                id: this.state.id,
-                url: this.state.url,
-                description: this.state.description
+                sourceProgramStage: this.state.sourceProgramStage,
+                destinationProgramStage: this.state.destinationProgramStage
             })
             .then(response => {
-                this.props.onInstanceAdded(response.data);
-                showSuccessToast(`Instance created successfully`);
+                this.props.onRouteAdded(response.data);
+                showSuccessToast(`Route created successfully`);
                 this.setSavingInProgress(false)
             })
             .catch(err => {
                 console.error(err);
-                showErrorToast(`Failed to create instance : ${extractAxiosError(err)}`);
+                showErrorToast(`Failed to create route : ${extractAxiosError(err)}`);
                 this.setSavingInProgress(false);
             })
     };

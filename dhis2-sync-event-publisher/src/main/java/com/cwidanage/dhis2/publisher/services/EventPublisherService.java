@@ -33,7 +33,10 @@ public class EventPublisherService {
         Iterable<TransmittableEvent> fetchedEvents = transmittableEventService.getEventsWithStatus(TransmittableEventStatus.FETCHED_FROM_SOURCE);
         fetchedEvents.forEach(transmittableEvent -> {
             try {
-                logger.debug("Transmitting event {}", transmittableEvent);
+                logger.debug("Transmitting event {}", transmittableEvent.getId());
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Transmitting event {}", transmittableEvent);
+                }
                 jmsTemplate.convertAndSend("incoming_events", transmittableEvent);
                 transmittableEventService.transformStatus(transmittableEvent, TransmittableEventStatus.ACCEPTED_BY_UPSTREAM, null);
             } catch (JmsException jmsException) {

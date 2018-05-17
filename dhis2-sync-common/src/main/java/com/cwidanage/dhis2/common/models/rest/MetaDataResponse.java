@@ -1,4 +1,4 @@
-package com.cwidanage.dhis2.common.models;
+package com.cwidanage.dhis2.common.models.rest;
 
 import com.cwidanage.dhis2.common.models.dhis2.DataElement;
 import com.cwidanage.dhis2.common.models.dhis2.ProgramStage;

@@ -1,7 +1,7 @@
 package com.cwidanage.dhis2.acceptor.services;
 
 import com.cwidanage.dhis2.common.exceptions.ValidationException;
-import com.cwidanage.dhis2.common.models.MetaDataResponse;
+import com.cwidanage.dhis2.common.models.rest.MetaDataResponse;
 import com.cwidanage.dhis2.common.models.dhis2.DataElement;
 import com.cwidanage.dhis2.common.models.dhis2.ProgramStage;
 import com.cwidanage.dhis2.common.models.sync.DHIS2Instance;
@@ -20,9 +20,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
+/**
+ * @author Chathura Widanage
+ */
 @Component
 public class DHIS2InstanceService {
 
