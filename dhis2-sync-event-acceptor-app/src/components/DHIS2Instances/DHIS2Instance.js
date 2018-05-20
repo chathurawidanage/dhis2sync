@@ -2,11 +2,10 @@ import React from "react";
 import axios from "axios";
 import {getUrl} from "../../Constants";
 import {Link} from "react-router-dom";
-import {Button, Card, Elevation, Icon, Spinner, Tab, Tabs, Intent} from "@blueprintjs/core";
+import {Button, Card, Elevation, Icon, Intent, Spinner, Tab, Tabs} from "@blueprintjs/core";
 import "./DHIS2Instance.css";
 import DHIS2InstanceProgramStages from "./DHIS2InstanceProgramStages";
 import DHIS2InstanceDataElements from "./DHIS2InstanceDataElements";
-import {AppToaster} from "../../App";
 import {showErrorToast, showSuccessToast} from "../../utils/ToastUtils";
 import {extractAxiosError} from "../../utils/AxiosUtils";
 

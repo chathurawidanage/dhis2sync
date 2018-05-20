@@ -3,6 +3,7 @@ package com.cwidanage.dhis2.common.services;
 import com.cwidanage.dhis2.common.constants.TransmittableEventStatus;
 import com.cwidanage.dhis2.common.models.EventStatusTransformation;
 import com.cwidanage.dhis2.common.models.TransmittableEvent;
+import com.cwidanage.dhis2.common.repositories.EventStatusTransformationRepository;
 import com.cwidanage.dhis2.common.repositories.TransmittableEventRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -12,6 +13,9 @@ public class TransmittableEventService {
 
     @Autowired
     private TransmittableEventRepository repository;
+
+    @Autowired
+    private EventStatusTransformationRepository eventStatusTransformationRepository;
 
     public Iterable<TransmittableEvent> save(Iterable<TransmittableEvent> transmittableEvents) {
         return this.repository.save(transmittableEvents);
@@ -36,7 +40,11 @@ public class TransmittableEventService {
         if (transmittableEvent.getLatestTransformation() != null) {
             latestTransformation.setPreviousStatus(transmittableEvent.getLatestTransformation().getCurrentStatus());
         }
+
+        //saving transformation
+        //transmittableEvent.getStatusTransformations().add(latestTransformation);
+        latestTransformation = eventStatusTransformationRepository.save(latestTransformation);
+
         transmittableEvent.setLatestTransformation(latestTransformation);
-        transmittableEvent.getStatusTransformations().add(latestTransformation);
     }
 }

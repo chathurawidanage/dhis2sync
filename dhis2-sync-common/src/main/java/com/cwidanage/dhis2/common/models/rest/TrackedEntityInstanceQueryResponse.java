@@ -5,7 +5,7 @@ import com.cwidanage.dhis2.common.models.dhis2.TrackedEntityInstance;
 /**
  * @author Chathura Widanage
  */
-public class TrackedEntityInstanceResponse {
+public class TrackedEntityInstanceQueryResponse {
 
     private String identifier;
     private TrackedEntityInstance trackedEntityInstance;

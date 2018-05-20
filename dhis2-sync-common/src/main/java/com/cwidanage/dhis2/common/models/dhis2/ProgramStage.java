@@ -1,6 +1,7 @@
 package com.cwidanage.dhis2.common.models.dhis2;
 
 import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
 
 /**
  * @author Chathura Widanage
@@ -10,6 +11,9 @@ public class ProgramStage {
 
     private String id;
     private String displayName;
+
+    @Transient
+    private Program program;
 
     public String getId() {
         return id;
@@ -25,5 +29,13 @@ public class ProgramStage {
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    public Program getProgram() {
+        return program;
+    }
+
+    public void setProgram(Program program) {
+        this.program = program;
     }
 }

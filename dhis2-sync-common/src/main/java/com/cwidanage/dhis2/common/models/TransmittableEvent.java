@@ -17,7 +17,7 @@ public class TransmittableEvent {
     @Id
     private String id;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Event event;
 
     //source instance
@@ -29,7 +29,7 @@ public class TransmittableEvent {
     @OneToOne(cascade = CascadeType.ALL)
     private EventStatusTransformation latestTransformation;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private Set<EventStatusTransformation> statusTransformations = new HashSet<>();
 
     public TransmittableEvent() {

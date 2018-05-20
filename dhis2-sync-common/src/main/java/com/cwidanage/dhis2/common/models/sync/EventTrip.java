@@ -19,10 +19,13 @@ public class EventTrip {
     @ManyToOne(optional = false)
     private TransmittableEvent transmittableEvent;
 
+    //saves destination event id when event is persisted for the first time
+    private String destinationEventId;
+
     @OneToOne
     private EventTripStatusTransformation latestTransformation;
 
-    @OneToMany(fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
     private Set<EventTripStatusTransformation> eventTripStatusTransformations = new HashSet<>();
 
     private Date lastUpdate;
@@ -73,6 +76,14 @@ public class EventTrip {
 
     public void setLastUpdate(Date lastUpdate) {
         this.lastUpdate = lastUpdate;
+    }
+
+    public String getDestinationEventId() {
+        return destinationEventId;
+    }
+
+    public void setDestinationEventId(String destinationEventId) {
+        this.destinationEventId = destinationEventId;
     }
 
     @PreUpdate

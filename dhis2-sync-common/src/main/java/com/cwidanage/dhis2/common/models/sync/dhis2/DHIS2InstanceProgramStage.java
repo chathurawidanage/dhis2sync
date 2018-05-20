@@ -20,6 +20,8 @@ public class DHIS2InstanceProgramStage extends ProgramStage {
     @ManyToOne(optional = false)
     private DHIS2Instance dhis2Instance;
 
+    private String programId;
+
     @OneToOne(optional = false, orphanRemoval = true, cascade = CascadeType.ALL)
     private Syncability syncability;
 
@@ -45,5 +47,20 @@ public class DHIS2InstanceProgramStage extends ProgramStage {
 
     public void setDhis2Instance(DHIS2Instance dhis2Instance) {
         this.dhis2Instance = dhis2Instance;
+    }
+
+    public String getProgramId() {
+        return programId;
+    }
+
+    public void setProgramId(String programId) {
+        this.programId = programId;
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (this.getProgram() != null) {
+            this.programId = this.getProgram().getId();
+        }
     }
 }

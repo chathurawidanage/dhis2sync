@@ -8,8 +8,8 @@ import com.cwidanage.dhis2.common.models.sync.DHIS2Instance;
 import com.cwidanage.dhis2.common.models.sync.dhis2.DHIS2InstanceDataElement;
 import com.cwidanage.dhis2.common.models.sync.dhis2.DHIS2InstanceProgramStage;
 import com.cwidanage.dhis2.common.repositories.DHIS2InstanceRepository;
-import com.cwidanage.dhis2.common.services.DHIS2InstanceDataElementService;
-import com.cwidanage.dhis2.common.services.DHIS2InstanceProgramStageService;
+import com.cwidanage.dhis2.common.services.dhis2.DHIS2InstanceDataElementService;
+import com.cwidanage.dhis2.common.services.dhis2.DHIS2InstanceProgramStageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -68,10 +68,11 @@ public class DHIS2InstanceService {
         Map<String, DHIS2InstanceProgramStage> programStagesMap = this.di2ProgramStagesService.getProgramStagesMap(dhis2Instance);
         List<ProgramStage> programStagesResponse = metaDataResponse.getProgramStages();
         programStagesResponse.forEach(programStage -> {
-            String identifier = di2ProgramStagesService.generateIdentifier(dhis2Instance, programStage);
+            String identifier = DHIS2InstanceProgramStageService.generateIdentifier(dhis2Instance, programStage);
             if (!programStagesMap.containsKey(identifier)) {
-                DHIS2InstanceProgramStage d2iProgramStage = this.di2ProgramStagesService
-                        .createDHIS2InstanceProgramStage(dhis2Instance, programStage);
+                DHIS2InstanceProgramStage d2iProgramStage = DHIS2InstanceProgramStageService.createDHIS2InstanceProgramStage(
+                        dhis2Instance, programStage
+                );
                 programStagesMap.put(identifier, d2iProgramStage);
             } else if (!programStagesMap.get(identifier).getSyncability().isEnabledBySource()) {
                 programStagesMap.get(identifier).getSyncability().setEnabledBySource(true);
@@ -86,10 +87,11 @@ public class DHIS2InstanceService {
         Map<String, DHIS2InstanceDataElement> dataElementMap = this.d2iDataElementService.getDataElementMap(dhis2Instance);
         List<DataElement> dataElementsResponse = metaDataResponse.getDataElements();
         dataElementsResponse.forEach(dataElement -> {
-            String identifier = d2iDataElementService.generateIdentifier(dhis2Instance, dataElement);
+            String identifier = DHIS2InstanceDataElementService.generateIdentifier(dhis2Instance, dataElement);
             if (!dataElementMap.containsKey(identifier)) {
-                DHIS2InstanceDataElement d2iDataElement = this.d2iDataElementService
-                        .createDHIS2InstanceDataElement(dhis2Instance, dataElement);
+                DHIS2InstanceDataElement d2iDataElement = DHIS2InstanceDataElementService.createDHIS2InstanceDataElement(
+                        dhis2Instance, dataElement
+                );
                 dataElementMap.put(identifier, d2iDataElement);
             } else if (!dataElementMap.get(identifier).getSyncability().isEnabledBySource()) {
                 dataElementMap.get(identifier).getSyncability().setEnabledBySource(true);

@@ -10,6 +10,7 @@ import com.cwidanage.dhis2.common.services.EventTripService;
 import com.cwidanage.dhis2.common.services.TransmittableEventService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
@@ -44,11 +45,13 @@ public class IncomingEventListener {
         TransmittableEvent subject = transmittableEventService.getById(transmittableEvent.getId());
         if (subject != null) {
             logger.debug("Received event {} is existing", transmittableEvent.getId());
-            subject.setEvent(transmittableEvent.getEvent());
+            subject.setEvent(transmittableEvent.getEvent());//setting new data
+
             this.transmittableEventService.transformStatus(subject, TransmittableEventStatus.UPDATED, null);
+
             //reset trips
             logger.debug("Resetting {} event trips of {}", subject.getEventTrips().size(), subject.getId());
-            subject.getEventTrips().forEach(eventTrip -> eventTripService.transformStatus(
+            subject.getEventTrips().forEach(eventTrip -> this.eventTripService.transformStatus(
                     eventTrip, EventTripStatus.INITIALIZED, "Reinitializing due to an update")
             );
         } else {
@@ -81,7 +84,7 @@ public class IncomingEventListener {
         routesForSource.forEach(eventRoute -> {
             if (!existingEventRoutes.contains(eventRoute)) {
                 logger.debug("Creating trip for event {} with route {}", transmittableEvent.getId(), eventRoute.getId());
-                EventTrip eventTrip = eventTripService.createEventTrip(transmittableEvent, eventRoute);
+                EventTrip eventTrip = this.eventTripService.createEventTrip(transmittableEvent, eventRoute);
                 transmittableEvent.getEventTrips().add(eventTrip);
             } else {
                 logger.debug("Skipping route {} for event {} since, already exists", eventRoute.getId(), transmittableEvent.getId());

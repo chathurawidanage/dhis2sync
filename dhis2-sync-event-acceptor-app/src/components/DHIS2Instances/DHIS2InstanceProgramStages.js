@@ -3,10 +3,6 @@ import {Icon, Switch, Intent} from "@blueprintjs/core";
 
 export default class DHIS2InstanceProgramStages extends React.Component {
 
-    constructor(props) {
-        super(props);
-    }
-
     changeSyncStatus = () => {
 
     };

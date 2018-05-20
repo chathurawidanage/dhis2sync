@@ -4,6 +4,7 @@ import com.cwidanage.dhis2.common.exceptions.ValidationException;
 import com.cwidanage.dhis2.common.models.sync.EventRoute;
 import com.cwidanage.dhis2.common.models.sync.dhis2.DHIS2InstanceProgramStage;
 import com.cwidanage.dhis2.common.repositories.EventRouteRepository;
+import com.cwidanage.dhis2.common.services.dhis2.DHIS2InstanceProgramStageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

@@ -1,6 +1,6 @@
 import React from "react";
 import axios from "axios";
-import {getUrl, SERVER_URL} from "../../Constants";
+import {getUrl} from "../../Constants";
 import NewSyncDataElementPopup from "./NewSyncDataElementPopup";
 import {Button} from "@blueprintjs/core";
 import {showErrorToast} from "../../utils/ToastUtils";
@@ -8,6 +8,7 @@ import {extractAxiosError} from "../../utils/AxiosUtils";
 import {Link} from "react-router-dom";
 
 export class SyncDataElementsComponent extends React.Component {
+
     constructor(props) {
         super(props);
         this.state = {

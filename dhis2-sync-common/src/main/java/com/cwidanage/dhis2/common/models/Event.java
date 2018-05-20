@@ -17,21 +17,23 @@ public class Event {
     @Id
     @GenericGenerator(name = "uuid", strategy = "uuid2")
     @GeneratedValue(generator = "uuid")
+    @Access(AccessType.PROPERTY)
     private String id;
+
     private String event;//event id in DHIS2
     private String program;
     private String programStage;
     private String orgUnit;
     private String status;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Coordinate coordinate;
     private Date eventDate;
     private Date lastUpdated;
 
     private String trackedEntityInstance;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Fetch(FetchMode.SUBSELECT)
     private List<DataValue> dataValues;
 

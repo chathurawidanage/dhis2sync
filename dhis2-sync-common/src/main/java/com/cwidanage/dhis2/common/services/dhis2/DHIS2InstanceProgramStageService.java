@@ -1,4 +1,4 @@
-package com.cwidanage.dhis2.common.services;
+package com.cwidanage.dhis2.common.services.dhis2;
 
 import com.cwidanage.dhis2.common.models.dhis2.ProgramStage;
 import com.cwidanage.dhis2.common.models.sync.DHIS2Instance;
@@ -30,7 +30,7 @@ public class DHIS2InstanceProgramStageService {
         return this.repository.save(dhis2InstanceProgramStage);
     }
 
-    public String generateIdentifier(DHIS2Instance dhis2Instance, ProgramStage programStage) {
+    public static String generateIdentifier(DHIS2Instance dhis2Instance, ProgramStage programStage) {
         return String.format("%s_%s", dhis2Instance.getId(), programStage.getId());
     }
 
@@ -38,10 +38,10 @@ public class DHIS2InstanceProgramStageService {
         return this.repository.findOne(identifier);
     }
 
-    public DHIS2InstanceProgramStage createDHIS2InstanceProgramStage(DHIS2Instance dhis2Instance, ProgramStage programStage) {
+    public static DHIS2InstanceProgramStage createDHIS2InstanceProgramStage(DHIS2Instance dhis2Instance, ProgramStage programStage) {
         DHIS2InstanceProgramStage d2iProgramStage = new DHIS2InstanceProgramStage();
         d2iProgramStage.setDhis2Instance(dhis2Instance);
-        d2iProgramStage.setIdentifier(this.generateIdentifier(dhis2Instance, programStage));
+        d2iProgramStage.setIdentifier(generateIdentifier(dhis2Instance, programStage));
         d2iProgramStage.setId(programStage.getId());
         d2iProgramStage.setSyncability(new Syncability());
         d2iProgramStage.setDisplayName(programStage.getDisplayName());

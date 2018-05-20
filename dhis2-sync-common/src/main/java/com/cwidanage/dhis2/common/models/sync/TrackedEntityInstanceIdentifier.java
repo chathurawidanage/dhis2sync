@@ -16,8 +16,8 @@ public class TrackedEntityInstanceIdentifier {
     private String id;
 
     @OneToMany(fetch = FetchType.EAGER)
-    @MapKeyColumn(name = "identifier")
-    private Map<String, DHIS2InstanceTrackedEntityInstance> instancesMap = new HashMap<>();
+    @MapKeyColumn(name = "dhis2Instance")
+    private Map<DHIS2Instance, DHIS2InstanceTrackedEntityInstance> instancesMap = new HashMap<>();
 
     public String getId() {
         return id;
@@ -27,11 +27,11 @@ public class TrackedEntityInstanceIdentifier {
         this.id = id;
     }
 
-    public Map<String, DHIS2InstanceTrackedEntityInstance> getInstancesMap() {
+    public Map<DHIS2Instance, DHIS2InstanceTrackedEntityInstance> getInstancesMap() {
         return instancesMap;
     }
 
-    public void setInstancesMap(Map<String, DHIS2InstanceTrackedEntityInstance> instancesMap) {
+    public void setInstancesMap(Map<DHIS2Instance, DHIS2InstanceTrackedEntityInstance> instancesMap) {
         this.instancesMap = instancesMap;
     }
 }

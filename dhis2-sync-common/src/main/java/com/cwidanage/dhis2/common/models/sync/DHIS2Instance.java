@@ -20,10 +20,10 @@ public class DHIS2Instance {
 
     public Boolean syncEnabled;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "dhis2Instance")
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "dhis2Instance")
     private Set<DHIS2InstanceDataElement> dataElements;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "dhis2Instance")
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "dhis2Instance")
     private Set<DHIS2InstanceProgramStage> programStages;
 
     public Boolean isSyncEnabled() {
@@ -80,5 +80,20 @@ public class DHIS2Instance {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DHIS2Instance that = (DHIS2Instance) o;
+
+        return id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
     }
 }

@@ -15,7 +15,7 @@ import javax.persistence.ManyToOne;
 public class DHIS2InstanceTrackedEntityInstance extends TrackedEntityInstance {
 
     @Id
-    private String identifier;
+    private String identifier;//dhis2InstanceId_trackedEntityInstance
 
     @ManyToOne(optional = false)
     private DHIS2Instance dhis2Instance;
@@ -37,5 +37,13 @@ public class DHIS2InstanceTrackedEntityInstance extends TrackedEntityInstance {
 
     public void setDhis2Instance(DHIS2Instance dhis2Instance) {
         this.dhis2Instance = dhis2Instance;
+    }
+
+    public TrackedEntityInstanceIdentifier getTrackedEntityInstanceIdentifier() {
+        return trackedEntityInstanceIdentifier;
+    }
+
+    public void setTrackedEntityInstanceIdentifier(TrackedEntityInstanceIdentifier trackedEntityInstanceIdentifier) {
+        this.trackedEntityInstanceIdentifier = trackedEntityInstanceIdentifier;
     }
 }

@@ -29,6 +29,7 @@ public class ProgramStageService {
         UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUriString(dhis2ApiEndpoint);
         uriComponentsBuilder.path("programStages.json");
         uriComponentsBuilder.queryParam("page", "1");
+        uriComponentsBuilder.queryParam("fields", "[id,displayName,program]");
 
         List<ProgramStage> programStages = new ArrayList<>();
 
@@ -36,7 +37,7 @@ public class ProgramStageService {
         int pageToFetch = 1;
         do {
             uriComponentsBuilder.replaceQueryParam("page", pageToFetch);
-            ResponseEntity<ProgramStagesResponse> responseEntity = restTemplate.getForEntity(uriComponentsBuilder.toUriString(), ProgramStagesResponse.class);
+            ResponseEntity<ProgramStagesResponse> responseEntity = restTemplate.getForEntity(uriComponentsBuilder.build(false).toUriString(), ProgramStagesResponse.class);
             pageToFetch = responseEntity.getBody().getPager().getPage() + 1;
             totalPages = responseEntity.getBody().getPager().getPageCount();
             programStages.addAll(responseEntity.getBody().getProgramStages());

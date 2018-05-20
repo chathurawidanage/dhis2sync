@@ -18,18 +18,10 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-
-
-# Discovery Server Access
-eureka:
-  instance:
-    instance-id: ${random.value}
-    hostname: localhost
-    metadataMap:
-          instanceId: ${spring.application.name}:${random.int}
-  client:
-    serviceUrl:
-      defaultZone: http://localhost:1111/eureka/
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
 
 # HTTP Server
 server:
