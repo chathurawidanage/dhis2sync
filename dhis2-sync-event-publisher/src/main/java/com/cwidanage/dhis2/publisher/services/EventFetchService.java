@@ -24,6 +24,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -36,6 +37,9 @@ public class EventFetchService {
     private final static Logger logger = LogManager.getLogger(EventFetchService.class);
     private final static String SETTING_LAST_FETCHED_DATE = "SETTING_LAST_FETCHED_DATE";
     private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+    @Value("${dhis2.username}")
+    private String dhis2Username;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -59,7 +63,7 @@ public class EventFetchService {
             .build();
 
     @Async
-    @Scheduled(fixedDelay = 1000 * 60 * 2)
+    @Scheduled(fixedDelay = 1000 * 30)
     public void fetch() {
 
         UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUriString(dhis2ApiEndpoint);
@@ -80,12 +84,12 @@ public class EventFetchService {
 
                 Setting lastFetchedDateSetting = this.settingService.getValue(SETTING_LAST_FETCHED_DATE + "_" + programStage.getId());
                 final String lastFetchedDate = lastFetchedDateSetting != null ? lastFetchedDateSetting.getValue() : "2018-05-15";
-                String nextFetchDate = simpleDateFormat.format(new Date());
+                String nextFetchDate = simpleDateFormat.format(this.getOneDayLessToday());
                 logger.debug("Last fetch date of events of {} : {}", programStage.getId(), lastFetchedDate);
 
                 logger.debug("Scanning events for program stage {} of {}", programStage.getId(), program.getId());
                 uriComponentsBuilder.replaceQueryParam("programStage", programStage.getId());
-                uriComponentsBuilder.replaceQueryParam("startDate", lastFetchedDate);
+                uriComponentsBuilder.replaceQueryParam("lastUpdatedStartDate", lastFetchedDate);
 
                 int pageToFetch = 1;
                 int totalPages;
@@ -96,10 +100,10 @@ public class EventFetchService {
                     pageToFetch = eventsResponse.getPager().getPage() + 1;
                     List<TransmittableEvent> transmittableEvents = eventsResponse.getEvents()
                             .stream()
-                            .filter(event -> !fetchedEventsCache.containsKey(event.getEvent()))
+                            .filter(event -> (!fetchedEventsCache.containsKey(event.getEvent()) && !dhis2Username.equals(event.getStoredBy())))
                             .map(event -> new TransmittableEvent(event, this.configuration.getInstanceId()))
                             .collect(Collectors.toList());
-                    logger.debug("Filtered out {} already sent events", transmittableEvents.size() - eventsResponse.getEvents().size());
+                    logger.debug("Filtered out {} already sent events out of {}", eventsResponse.getEvents().size() - transmittableEvents.size(), eventsResponse.getEvents().size());
                     transmittableEventService.save(transmittableEvents);
                     transmittableEvents.forEach(transmittableEvent -> {
                         fetchedEventsCache.put(transmittableEvent.getEvent().getEvent(), true);
@@ -110,6 +114,13 @@ public class EventFetchService {
                 settingService.setValue(SETTING_LAST_FETCHED_DATE + "_" + programStage.getId(), nextFetchDate);
             });
         });
+    }
+
+    private Date getOneDayLessToday() {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(new Date());
+        cal.add(Calendar.DATE, -1);
+        return cal.getTime();
     }
 
     private EventsResponse fetchPage(UriComponentsBuilder uriComponentsBuilder, int page) {

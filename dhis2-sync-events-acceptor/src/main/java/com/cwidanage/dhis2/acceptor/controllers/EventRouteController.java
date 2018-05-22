@@ -5,6 +5,7 @@ import com.cwidanage.dhis2.common.models.sync.EventRoute;
 import com.cwidanage.dhis2.common.services.EventRouteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -21,6 +22,7 @@ public class EventRouteController {
     public Iterable<EventRoute> getAll() {
         return eventRouteService.getAll();
     }
+
 
     @RequestMapping(value = {"", "/"}, method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public EventRoute create(@RequestBody EventRouteCreateRequest eventRouteCreateRequest) {

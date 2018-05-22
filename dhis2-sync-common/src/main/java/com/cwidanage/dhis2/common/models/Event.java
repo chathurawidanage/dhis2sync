@@ -26,14 +26,18 @@ public class Event {
     private String orgUnit;
     private String status;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Transient
+    private String storedBy;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Coordinate coordinate;
+
     private Date eventDate;
     private Date lastUpdated;
 
     private String trackedEntityInstance;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @Fetch(FetchMode.SUBSELECT)
     private List<DataValue> dataValues;
 
@@ -125,6 +129,14 @@ public class Event {
         this.dataValues = dataValues;
     }
 
+    public String getStoredBy() {
+        return storedBy;
+    }
+
+    public void setStoredBy(String storedBy) {
+        this.storedBy = storedBy;
+    }
+
     @Override
     public String toString() {
         return "Event{" +
@@ -141,4 +153,6 @@ public class Event {
                 ", dataValues=" + dataValues +
                 '}';
     }
+
+
 }

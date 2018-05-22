@@ -41,8 +41,9 @@ public class EventDistributorService {
     private ExecutorService newEventProcessor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
     @Async
-    @Scheduled(fixedDelay = 1000 * 60 * 2)
+    @Scheduled(fixedDelay = 1000 * 30)
     public void distributeNewEvent() {
+        logger.debug("Starting event distribution task");
         Iterable<EventTrip> newEventTrips = this.eventTripService.getNewEventTrips();
 
         List<Future<EventTrip>> tripProcessingFuture = new ArrayList<>();

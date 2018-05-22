@@ -23,7 +23,7 @@ export default class DHIS2InstanceProgramStages extends React.Component {
                 <tbody>
                 {this.props.programStages.map(ps => {
                     return <tr key={ps.identifier}>
-                        <td>{ps.displayName}</td>
+                        <td>[{ps.dhis2InstanceProgram.displayName}] {ps.displayName}</td>
                         <td className="text-center">
                             {ps.syncability.enabledBySource && <Icon icon="tick-circle" intent={Intent.SUCCESS}/>}
                             {!ps.syncability.enabledBySource && <Icon icon="ban-circle" intent={Intent.DANGER}/>}

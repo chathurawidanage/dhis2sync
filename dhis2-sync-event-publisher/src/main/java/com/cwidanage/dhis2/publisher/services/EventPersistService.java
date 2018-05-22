@@ -5,6 +5,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -24,6 +25,8 @@ public class EventPersistService {
         logger.debug("Received persist request for event {}", event);
         UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUriString(dhis2ApiEndpoint);
         uriComponentsBuilder.path("events.json");
+        ResponseEntity<String> stringResponseEntity = restTemplate.postForEntity(uriComponentsBuilder.toUriString(), event, String.class);
+        System.out.println(stringResponseEntity.getBody());
         event.setEvent("HIII");
         return event;
     }

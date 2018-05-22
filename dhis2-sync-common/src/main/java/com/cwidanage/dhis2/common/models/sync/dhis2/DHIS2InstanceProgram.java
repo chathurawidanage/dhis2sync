@@ -46,4 +46,19 @@ public class DHIS2InstanceProgram extends Program {
     public void setDhis2Instance(DHIS2Instance dhis2Instance) {
         this.dhis2Instance = dhis2Instance;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DHIS2InstanceProgram that = (DHIS2InstanceProgram) o;
+
+        return identifier.equals(that.identifier);
+    }
+
+    @Override
+    public int hashCode() {
+        return identifier.hashCode();
+    }
 }

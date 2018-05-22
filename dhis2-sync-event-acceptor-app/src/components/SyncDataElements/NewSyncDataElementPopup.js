@@ -15,6 +15,15 @@ export default class NewSyncDataElementPopup extends React.Component {
         }
     }
 
+    componentWillReceiveProps(nextProps) {
+        if (this.props.isOpen !== nextProps.isOpen) {
+            this.setState({
+                displayName: "",
+                code: ""
+            });
+        }
+    }
+
     onNameChanged = (event) => {
         this.setState({
             displayName: event.target.value

@@ -6,9 +6,11 @@ import com.cwidanage.dhis2.common.models.dhis2.DataElement;
 import com.cwidanage.dhis2.common.models.dhis2.ProgramStage;
 import com.cwidanage.dhis2.common.models.sync.DHIS2Instance;
 import com.cwidanage.dhis2.common.models.sync.dhis2.DHIS2InstanceDataElement;
+import com.cwidanage.dhis2.common.models.sync.dhis2.DHIS2InstanceProgram;
 import com.cwidanage.dhis2.common.models.sync.dhis2.DHIS2InstanceProgramStage;
 import com.cwidanage.dhis2.common.repositories.DHIS2InstanceRepository;
 import com.cwidanage.dhis2.common.services.dhis2.DHIS2InstanceDataElementService;
+import com.cwidanage.dhis2.common.services.dhis2.DHIS2InstanceProgramService;
 import com.cwidanage.dhis2.common.services.dhis2.DHIS2InstanceProgramStageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Chathura Widanage
@@ -35,6 +39,9 @@ public class DHIS2InstanceService {
 
     @Autowired
     private DHIS2InstanceProgramStageService di2ProgramStagesService;
+
+    @Autowired
+    private DHIS2InstanceProgramService d2iProgramService;
 
     public MetaDataResponse fetchMetaData(DHIS2Instance dhis2Instance) {
         RestTemplate restTemplate = new RestTemplate();
@@ -64,6 +71,19 @@ public class DHIS2InstanceService {
             ));
         }
 
+        //SYNCING PROGRAMS
+        Map<String, DHIS2InstanceProgram> existingD2Programs = this.d2iProgramService.getExistingProgramIdentifiers(dhis2Instance);
+        Set<DHIS2InstanceProgram> d2ProgramsToPersist = metaDataResponse.getPrograms().stream()
+                .filter(program -> !existingD2Programs
+                        .containsKey(DHIS2InstanceProgramService.generateIdentifier(dhis2Instance, program))
+                )
+                .map(program -> DHIS2InstanceProgramService.createDHIS2InstanceProgram(dhis2Instance, program))
+                .collect(Collectors.toSet());
+        d2iProgramService.save(d2ProgramsToPersist).forEach(dhis2InstanceProgram -> {
+            existingD2Programs.put(dhis2InstanceProgram.getIdentifier(), dhis2InstanceProgram);
+        });
+        //DONE SYNCING PROGRAMS
+
         //SYNCING PROGRAM STAGES
         Map<String, DHIS2InstanceProgramStage> programStagesMap = this.di2ProgramStagesService.getProgramStagesMap(dhis2Instance);
         List<ProgramStage> programStagesResponse = metaDataResponse.getProgramStages();
@@ -71,7 +91,9 @@ public class DHIS2InstanceService {
             String identifier = DHIS2InstanceProgramStageService.generateIdentifier(dhis2Instance, programStage);
             if (!programStagesMap.containsKey(identifier)) {
                 DHIS2InstanceProgramStage d2iProgramStage = DHIS2InstanceProgramStageService.createDHIS2InstanceProgramStage(
-                        dhis2Instance, programStage
+                        dhis2Instance,
+                        programStage,
+                        existingD2Programs.get(DHIS2InstanceProgramService.generateIdentifier(dhis2Instance, programStage.getProgram()))
                 );
                 programStagesMap.put(identifier, d2iProgramStage);
             } else if (!programStagesMap.get(identifier).getSyncability().isEnabledBySource()) {

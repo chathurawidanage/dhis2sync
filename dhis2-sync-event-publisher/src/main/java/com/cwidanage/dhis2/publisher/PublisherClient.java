@@ -1,5 +1,8 @@
 package com.cwidanage.dhis2.publisher;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -21,6 +24,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.jms.ConnectionFactory;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +34,8 @@ import java.util.List;
 @SpringBootApplication
 @EnableJms
 public class PublisherClient {
+
+    private final static Logger logger = LogManager.getLogger(PublisherClient.class);
 
     @Value("${dhis2.username}")
     private String dhis2Username;
@@ -47,7 +53,12 @@ public class PublisherClient {
 
     @Bean
     public Configuration configuration() throws IOException {
-        return Configuration.buildByFile(new File(PublisherClient.class.getClassLoader().getResource(configFile).getFile()));
+        try {
+            URL resource = PublisherClient.class.getClassLoader().getResource(configFile);
+            return Configuration.buildByFile(new File(resource.getFile()));
+        } catch (IllegalArgumentException ilex) {
+            return Configuration.buildByFile(new File(configFile));
+        }
     }
 
     @Bean

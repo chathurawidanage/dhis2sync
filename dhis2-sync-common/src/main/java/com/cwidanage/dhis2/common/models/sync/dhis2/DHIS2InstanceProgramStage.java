@@ -20,7 +20,8 @@ public class DHIS2InstanceProgramStage extends ProgramStage {
     @ManyToOne(optional = false)
     private DHIS2Instance dhis2Instance;
 
-    private String programId;
+    @ManyToOne
+    private DHIS2InstanceProgram dhis2InstanceProgram;
 
     @OneToOne(optional = false, orphanRemoval = true, cascade = CascadeType.ALL)
     private Syncability syncability;
@@ -49,18 +50,11 @@ public class DHIS2InstanceProgramStage extends ProgramStage {
         this.dhis2Instance = dhis2Instance;
     }
 
-    public String getProgramId() {
-        return programId;
+    public DHIS2InstanceProgram getDhis2InstanceProgram() {
+        return dhis2InstanceProgram;
     }
 
-    public void setProgramId(String programId) {
-        this.programId = programId;
-    }
-
-    @PrePersist
-    public void prePersist() {
-        if (this.getProgram() != null) {
-            this.programId = this.getProgram().getId();
-        }
+    public void setDhis2InstanceProgram(DHIS2InstanceProgram dhis2InstanceProgram) {
+        this.dhis2InstanceProgram = dhis2InstanceProgram;
     }
 }

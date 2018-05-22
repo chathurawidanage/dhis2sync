@@ -45,6 +45,14 @@ public class EventTripService {
         return eventTrip;
     }
 
+    public EventTrip createAndSaveEventTrip(TransmittableEvent transmittableEvent, EventRoute eventRoute) {
+        return this.repository.save(this.createEventTrip(transmittableEvent, eventRoute));
+    }
+
+    public EventTrip save(EventTrip eventTrip) {
+        return this.repository.save(eventTrip);
+    }
+
     public Iterable<EventTrip> getEventTipsWithStatus(EventTripStatus eventTripStatus) {
         return repository.findTop20ByLatestTransformation_CurrentStatusOrderByLastUpdate(eventTripStatus);
     }

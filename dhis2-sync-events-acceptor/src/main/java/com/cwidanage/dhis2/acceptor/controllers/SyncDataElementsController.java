@@ -19,7 +19,6 @@ public class SyncDataElementsController {
 
     @RequestMapping(path = {"", "/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public Iterable<SyncDataElement> listAll() {
-        System.out.println("Rque rec");
         return this.syncDataElementService.getAll();
     }
 

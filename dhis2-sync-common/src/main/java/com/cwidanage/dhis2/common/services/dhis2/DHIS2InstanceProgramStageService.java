@@ -3,6 +3,7 @@ package com.cwidanage.dhis2.common.services.dhis2;
 import com.cwidanage.dhis2.common.models.dhis2.ProgramStage;
 import com.cwidanage.dhis2.common.models.sync.DHIS2Instance;
 import com.cwidanage.dhis2.common.models.sync.Syncability;
+import com.cwidanage.dhis2.common.models.sync.dhis2.DHIS2InstanceProgram;
 import com.cwidanage.dhis2.common.models.sync.dhis2.DHIS2InstanceProgramStage;
 import com.cwidanage.dhis2.common.repositories.dhis2.DHIS2InstanceProgramStageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,13 +39,15 @@ public class DHIS2InstanceProgramStageService {
         return this.repository.findOne(identifier);
     }
 
-    public static DHIS2InstanceProgramStage createDHIS2InstanceProgramStage(DHIS2Instance dhis2Instance, ProgramStage programStage) {
+    public static DHIS2InstanceProgramStage createDHIS2InstanceProgramStage(DHIS2Instance dhis2Instance,
+                                                                            ProgramStage programStage, DHIS2InstanceProgram dhis2InstanceProgram) {
         DHIS2InstanceProgramStage d2iProgramStage = new DHIS2InstanceProgramStage();
         d2iProgramStage.setDhis2Instance(dhis2Instance);
         d2iProgramStage.setIdentifier(generateIdentifier(dhis2Instance, programStage));
         d2iProgramStage.setId(programStage.getId());
         d2iProgramStage.setSyncability(new Syncability());
         d2iProgramStage.setDisplayName(programStage.getDisplayName());
+        d2iProgramStage.setDhis2InstanceProgram(dhis2InstanceProgram);
         return d2iProgramStage;
     }
 }

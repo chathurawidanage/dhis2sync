@@ -11,6 +11,7 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Chathura Widanage
@@ -28,7 +29,8 @@ public class EventPublisherService {
     private TransmittableEventService transmittableEventService;
 
     @Async
-    @Scheduled(fixedDelay = 1000 * 60 * 2)
+    @Scheduled(fixedDelay = 1000 * 30)
+    @Transactional
     public void publishEvents() {
         Iterable<TransmittableEvent> fetchedEvents = transmittableEventService.getEventsWithStatus(TransmittableEventStatus.FETCHED_FROM_SOURCE);
         fetchedEvents.forEach(transmittableEvent -> {
@@ -37,6 +39,7 @@ public class EventPublisherService {
                 if (logger.isTraceEnabled()) {
                     logger.trace("Transmitting event {}", transmittableEvent);
                 }
+
                 jmsTemplate.convertAndSend("incoming_events", transmittableEvent);
                 transmittableEventService.transformStatus(transmittableEvent, TransmittableEventStatus.ACCEPTED_BY_UPSTREAM, null);
             } catch (JmsException jmsException) {

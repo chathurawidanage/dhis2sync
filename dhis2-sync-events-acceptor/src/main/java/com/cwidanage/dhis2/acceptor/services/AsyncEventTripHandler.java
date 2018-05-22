@@ -13,7 +13,10 @@ import com.cwidanage.dhis2.common.services.dhis2.DHIS2EventService;
 import com.cwidanage.dhis2.common.services.dhis2.DHIS2InstanceDataElementService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 import java.util.Objects;
@@ -88,7 +91,7 @@ public class AsyncEventTripHandler implements Callable<EventTrip> {
     public boolean resolveEventAttributes() {
         TransmittableEvent transmittableEvent = this.eventTrip.getTransmittableEvent();
         //initializing lazy attributes
-        Event event = this.dhis2EventService.loadEventAttributes(transmittableEvent.getEvent().getId());
+        Event event = transmittableEvent.getEvent();//this.dhis2EventService.loadEventAttributes(transmittableEvent.getEvent().getId());
 
         //data values
         List<DataValue> dataValues = event.getDataValues();
@@ -116,6 +119,22 @@ public class AsyncEventTripHandler implements Callable<EventTrip> {
         return false;
     }
 
+    public void transferEvent() {
+        logger.debug("Transferring event {}", this.sendingEvent);
+        UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUriString(
+                this.eventTrip.getEventRoute().getDestination().getDhis2Instance().getUrl()
+        );
+        uriComponentsBuilder.path("events");
+
+        ResponseEntity<Event> eventResponseEntity = this.restTemplate.postForEntity(uriComponentsBuilder.toUriString(), this.sendingEvent, Event.class);
+        if (eventResponseEntity.getStatusCode().equals(HttpStatus.OK)) {
+            logger.debug("Event Trip {} persisted event in destination with ID {}", this.eventTrip.getId(), eventResponseEntity.getBody().getEvent());
+            this.eventTrip.setDestinationEventId(eventResponseEntity.getBody().getEvent());
+            this.eventTripService.transformStatus(this.eventTrip, EventTripStatus.COMPLETED, null);
+            this.eventTripService.save(this.eventTrip);
+        }
+    }
+
     @Override
     public EventTrip call() throws Exception {
         logger.debug("Starting to process event trip {}", eventTrip.getId());
@@ -126,10 +145,10 @@ public class AsyncEventTripHandler implements Callable<EventTrip> {
 
 
             //resolve program and program stage
-            this.sendingEvent.setProgram(this.eventTrip.getEventRoute().getDestination().getProgramId());
+            this.sendingEvent.setProgram(this.eventTrip.getEventRoute().getDestination().getDhis2InstanceProgram().getId());
             this.sendingEvent.setProgramStage(this.eventTrip.getEventRoute().getDestination().getId());
 
-            System.out.println(this.sendingEvent);
+            this.transferEvent();
         }
         return this.eventTrip;
     }

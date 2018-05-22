@@ -24,7 +24,7 @@ server:
   port: 3333   # HTTP (Tomcat) port
 
 dhis2:
-  apiEndPoint: http://112.134.224.244:8080/nss/api/
-  username: chathura
-  password: Chathura123
+  apiEndPoint: http://lankanets.dynu.com:8080/nss/api/
+  username: dnms_sync
+  password: DNMSSYNC1.
   config: config.json
