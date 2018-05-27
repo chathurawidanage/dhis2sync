@@ -27,8 +27,8 @@ class App extends Component {
                     <NavbarGroup align={Alignment.LEFT}>
                         <NavbarHeading>DHIS2 - Sync</NavbarHeading>
                         <NavbarDivider/>
-                        <Button className="pt-minimal" icon="home" text="Home"/>
-                        <Button className="pt-minimal" icon="document" text="Files"/>
+                        {/*<Button className="pt-minimal" icon="home" text="Home"/>*/}
+                        {/*<Button className="pt-minimal" icon="document" text="Files"/>*/}
                     </NavbarGroup>
                 </Navbar>
                 <div className="app-content">

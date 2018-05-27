@@ -63,9 +63,9 @@ public class AsyncEventTripHandler implements Callable<EventTrip> {
         DHIS2InstanceTrackedEntityInstance sourceInstanceTEI = teiService.findByTEIId(sourceInstance, trackedEntityInstanceId);
 
         if (sourceInstanceTEI == null) {
-            logger.debug("Couldn't findByTEIId unique TEI attribute in source for {}", trackedEntityInstanceId);
+            logger.debug("Couldn't find unique TEI attribute in source for {}", trackedEntityInstanceId);
             this.eventTripService.transformStatus(this.eventTrip, EventTripStatus.WAITING_FOR_TEI_DATA,
-                    "Couldn't findByTEIId unique TEI attribute in source " + sourceInstance.getId());
+                    "Couldn't find unique TEI attribute in source " + sourceInstance.getId());
             return false;
         }
 
@@ -77,11 +77,14 @@ public class AsyncEventTripHandler implements Callable<EventTrip> {
                 .getOrDefault(destinationInstance, teiService.findByAttributeValue(destinationInstance,
                         sourceInstanceTEI.getTrackedEntityInstanceIdentifier().getId()));
         if (destinationTEI == null) {
-            logger.debug("Couldn't findByTEIId unique TEI attribute in destination for {}", trackedEntityInstanceId);
+            logger.debug("Couldn't find  unique TEI attribute in destination for {} with attribute",
+                    trackedEntityInstanceId,
+                    sourceInstanceTEI.getTrackedEntityInstanceIdentifier().getId());
 
             //failed
             this.eventTripService.transformStatus(this.eventTrip, EventTripStatus.WAITING_FOR_TEI_DATA,
-                    "Couldn't findByTEIId unique TEI attribute in destination " + destinationInstance.getId());
+                    String.format("Couldn't find TEI unique attribute[%s] in destination %s",
+                            sourceInstanceTEI.getTrackedEntityInstanceIdentifier().getId(), destinationInstance.getId()));
             return false;
         }
         //has all necessary values
@@ -175,6 +178,7 @@ public class AsyncEventTripHandler implements Callable<EventTrip> {
 
             this.transferEvent();
         }
+        this.eventTripService.save(this.eventTrip);
         return this.eventTrip;
     }
 }
