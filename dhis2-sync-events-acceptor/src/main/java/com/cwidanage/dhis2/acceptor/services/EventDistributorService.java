@@ -61,11 +61,9 @@ public class EventDistributorService {
         for (Future<EventTrip> future : tripProcessingFuture) {
             try {
                 EventTrip eventTrip = future.get();
-                System.out.println(eventTrip);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
+                logger.debug("Event trip processing handler returned without issues", eventTrip.getId());
+            } catch (InterruptedException | ExecutionException e) {
+                logger.error("Error occurred when handling event trip", e);
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.cwidanage.dhis2.common.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Entity;
@@ -12,6 +13,7 @@ import javax.persistence.Id;
 @Entity
 public class Coordinate {
 
+    @JsonIgnore
     @Id
     @GenericGenerator(name = "uuid", strategy = "uuid2")
     @GeneratedValue(generator = "uuid")

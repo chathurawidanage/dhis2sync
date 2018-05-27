@@ -1,5 +1,6 @@
 package com.cwidanage.dhis2.common.models;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;

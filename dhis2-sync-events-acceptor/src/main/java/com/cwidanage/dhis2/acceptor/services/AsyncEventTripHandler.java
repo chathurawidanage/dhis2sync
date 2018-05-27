@@ -4,6 +4,8 @@ import com.cwidanage.dhis2.common.constants.EventTripStatus;
 import com.cwidanage.dhis2.common.models.DataValue;
 import com.cwidanage.dhis2.common.models.Event;
 import com.cwidanage.dhis2.common.models.TransmittableEvent;
+import com.cwidanage.dhis2.common.models.rest.eventPersistResponse.EventPersistResponse;
+import com.cwidanage.dhis2.common.models.rest.eventPersistResponse.ImportSummary;
 import com.cwidanage.dhis2.common.models.sync.DHIS2Instance;
 import com.cwidanage.dhis2.common.models.sync.EventTrip;
 import com.cwidanage.dhis2.common.models.sync.dhis2.DHIS2InstanceDataElement;
@@ -126,12 +128,35 @@ public class AsyncEventTripHandler implements Callable<EventTrip> {
         );
         uriComponentsBuilder.path("events");
 
-        ResponseEntity<Event> eventResponseEntity = this.restTemplate.postForEntity(uriComponentsBuilder.toUriString(), this.sendingEvent, Event.class);
+        ResponseEntity<EventPersistResponse> eventResponseEntity = this.restTemplate.postForEntity(uriComponentsBuilder.toUriString(), this.sendingEvent, EventPersistResponse.class);
         if (eventResponseEntity.getStatusCode().equals(HttpStatus.OK)) {
-            logger.debug("Event Trip {} persisted event in destination with ID {}", this.eventTrip.getId(), eventResponseEntity.getBody().getEvent());
-            this.eventTrip.setDestinationEventId(eventResponseEntity.getBody().getEvent());
-            this.eventTripService.transformStatus(this.eventTrip, EventTripStatus.COMPLETED, null);
+            EventPersistResponse eventPersistResponse = eventResponseEntity.getBody();
+            if (eventPersistResponse.getHttpStatusCode() != 200) {
+                logger.debug("Event trip {} rejected by down stream {}", eventTrip.getId(), eventPersistResponse.getMessage());
+                this.eventTripService.transformStatus(this.eventTrip, EventTripStatus.REJECTED_BY_DOWNSTREAM, eventPersistResponse.getMessage());
+            } else if (eventPersistResponse.getResponse() == null) {
+                logger.debug("Event trip {} returned with a null response", eventTrip.getId());
+                this.eventTripService.transformStatus(this.eventTrip, EventTripStatus.REJECTED_BY_DOWNSTREAM, "Null response in persist request");
+            } else if (eventPersistResponse.getResponse().getImportSummaries() == null) {
+                logger.debug("Event trip {} returned with a null import summary", eventTrip.getId());
+                this.eventTripService.transformStatus(this.eventTrip, EventTripStatus.REJECTED_BY_DOWNSTREAM, "Null import summary");
+            } else if (eventPersistResponse.getResponse().getImportSummaries().size() != 1) {
+                logger.debug("Event trip {} returned with unexpected number of import summaries. Expected 1 found {}", eventTrip.getId(), eventPersistResponse.getResponse().getImportSummaries().size());
+                this.eventTripService.transformStatus(this.eventTrip, EventTripStatus.REJECTED_BY_DOWNSTREAM, "Unexpected number of import summaries : " + eventPersistResponse.getResponse().getImportSummaries().size());
+            } else {
+                ImportSummary importSummary = eventPersistResponse.getResponse().getImportSummaries().get(0);
+                if (importSummary.getReference() == null) {
+                    logger.debug("Event trip {} returned with a null reference");
+                    this.eventTripService.transformStatus(this.eventTrip, EventTripStatus.REJECTED_BY_DOWNSTREAM, "Null reference for the persisted event. Import status : " + importSummary.getStatus());
+                } else {
+                    logger.debug("Event Trip {} persisted event in destination with ID {}", eventTrip.getId(), importSummary.getReference());
+                    this.eventTripService.transformStatus(this.eventTrip, EventTripStatus.COMPLETED, "Event persisted with reference : " + importSummary.getReference());
+                    this.eventTrip.setDestinationEventId(importSummary.getReference());
+                }
+            }
             this.eventTripService.save(this.eventTrip);
+        } else {
+            //todo handle
         }
     }
 

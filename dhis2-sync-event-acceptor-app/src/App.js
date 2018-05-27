@@ -17,6 +17,7 @@ import DHIS2InstancesManager from "./components/DHIS2Instances/DHIS2InstancesMan
 import DHIS2Instances from "./components/DHIS2Instances/DHIS2Instance";
 import {Toaster, Position} from "@blueprintjs/core";
 import EventRouteManager from "./components/Routes/EventRouteManager";
+import EventRoute from "./components/Routes/EventRoute";
 
 class App extends Component {
     render() {
@@ -32,14 +33,18 @@ class App extends Component {
                 </Navbar>
                 <div className="app-content">
                     <Menu className="app-content-sidebar">
-                        <Link to="/dataElements">
-                            <MenuItem icon="layers" text="Data Elements"/>
-                        </Link>
-                        <Link to="/dhis2Instances">
-                            <MenuItem icon="database" onClick={this.handleClick} text="DHIS2 Instances"/>
-                        </Link>
-                        <Link to="/routes">
-                            <MenuItem icon="flows" onClick={this.handleClick} text="Event Routes"/>
+                        <li>
+                            <Link to="/dataElements" className="pt-icon-layers pt-menu-item">
+                                Data Elements
+                            </Link>
+                        </li>
+                        <li>
+                            <Link to="/dhis2Instances" className="pt-icon-database pt-menu-item">
+                                DHIS2 Instances
+                            </Link>
+                        </li>
+                        <Link to="/routes" className="pt-icon-flows pt-menu-item">
+                            Event Routes
                         </Link>
                         <MenuDivider/>
                         <MenuItem text="Settings..." icon="cog"/>
@@ -49,6 +54,7 @@ class App extends Component {
                             <Route path="/dataElements" component={SyncDataElementsComponent}/>
                             <Route path="/dhis2Instances/:instanceId" component={DHIS2Instances}/>
                             <Route path="/dhis2Instances" component={DHIS2InstancesManager}/>
+                            <Route path="/routes/:routeId" component={EventRoute}/>
                             <Route path="/routes" component={EventRouteManager}/>
                         </Switch>
                     </div>

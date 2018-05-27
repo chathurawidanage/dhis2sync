@@ -12,6 +12,8 @@ public class EventRoute {
     @Id
     private String id;
 
+    private String name;
+
     @ManyToOne(optional = false)
     private DHIS2InstanceProgramStage source;
 
@@ -50,6 +52,14 @@ public class EventRoute {
 
     public void setDestination(DHIS2InstanceProgramStage destination) {
         this.destination = destination;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override

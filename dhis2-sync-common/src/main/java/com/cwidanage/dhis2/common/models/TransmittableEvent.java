@@ -3,6 +3,7 @@ package com.cwidanage.dhis2.common.models;
 import com.cwidanage.dhis2.common.constants.TransmittableEventStatus;
 import com.cwidanage.dhis2.common.models.sync.DHIS2Instance;
 import com.cwidanage.dhis2.common.models.sync.EventTrip;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -23,6 +24,7 @@ public class TransmittableEvent {
     //source instance
     private String instanceId;
 
+    @JsonIgnore
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<EventTrip> eventTrips = new HashSet<>();
 

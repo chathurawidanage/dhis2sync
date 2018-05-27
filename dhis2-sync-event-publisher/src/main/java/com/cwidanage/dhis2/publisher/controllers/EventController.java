@@ -1,6 +1,7 @@
 package com.cwidanage.dhis2.publisher.controllers;
 
 import com.cwidanage.dhis2.common.models.Event;
+import com.cwidanage.dhis2.common.models.rest.eventPersistResponse.EventPersistResponse;
 import com.cwidanage.dhis2.publisher.services.EventPersistService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -17,7 +18,7 @@ public class EventController {
     private EventPersistService eventPersistService;
 
     @RequestMapping(path = {"", "/"}, consumes = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Event persistEvent(@RequestBody Event event) {
+    public EventPersistResponse persistEvent(@RequestBody Event event) {
         return this.eventPersistService.persist(event);
     }
 }

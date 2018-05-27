@@ -1,6 +1,7 @@
 package com.cwidanage.dhis2.common.models.sync;
 
 import com.cwidanage.dhis2.common.models.TransmittableEvent;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -13,9 +14,11 @@ public class EventTrip {
     @Id
     private String id;
 
+    @JsonIgnore
     @ManyToOne(optional = false)
     private EventRoute eventRoute;
 
+    @JsonIgnore
     @ManyToOne(optional = false)
     private TransmittableEvent transmittableEvent;
 

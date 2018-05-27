@@ -78,6 +78,11 @@ export default class EventRouteManager extends React.Component {
                             this.onSyncToggleChanged(index)
                         }}/>
                     </td>
+                    <td>
+                        <Link to={"/routes/" + route.id} className="pt-button pt-button-primary pt-small">
+                            Info
+                        </Link>
+                    </td>
                 </tr>
             )
         });
@@ -105,6 +110,7 @@ export default class EventRouteManager extends React.Component {
                         <td>Destination Instance</td>
                         <td>Destination Program Stage</td>
                         <td>Status</td>
+                        <td>Actions</td>
                     </tr>
                     </thead>
                     <tbody>

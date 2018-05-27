@@ -1,0 +1,24 @@
+.event-route-info-wrapper {
+  margin-top: 10px;
+  .edge-info {
+    &:not(:last-of-type) {
+      margin-bottom: 10px;
+    }
+
+    font-weight: 600;
+    em {
+      font-weight: normal;
+    }
+  }
+
+  .event-route-stat-wrapper {
+    display: grid;
+    grid-template-columns: 400px auto;
+  }
+
+  .pt-card {
+    &:not(:last-of-type) {
+      margin-bottom: 10px;
+    }
+  }
+}

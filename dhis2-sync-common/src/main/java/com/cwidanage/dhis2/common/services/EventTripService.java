@@ -5,11 +5,19 @@ import com.cwidanage.dhis2.common.models.TransmittableEvent;
 import com.cwidanage.dhis2.common.models.sync.EventRoute;
 import com.cwidanage.dhis2.common.models.sync.EventTrip;
 import com.cwidanage.dhis2.common.models.sync.EventTripStatusTransformation;
-import com.cwidanage.dhis2.common.repositories.EventStatusTransformationRepository;
 import com.cwidanage.dhis2.common.repositories.EventTripRepository;
 import com.cwidanage.dhis2.common.repositories.EventTripStatusTransformationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 public class EventTripService {
@@ -55,6 +63,24 @@ public class EventTripService {
 
     public Iterable<EventTrip> getEventTipsWithStatus(EventTripStatus eventTripStatus) {
         return repository.findTop20ByLatestTransformation_CurrentStatusOrderByLastUpdate(eventTripStatus);
+    }
+
+    public EventTrip reInitializeTrip(String tripId) {
+        EventTrip eventTrip = this.repository.findOne(tripId);
+        transformStatus(eventTrip, EventTripStatus.INITIALIZED, "Reinitialized manually");
+        return this.save(eventTrip);
+    }
+
+    public Page<EventTrip> queryEventTrips(String eventRouteId, EventTripStatus eventTripStatus, int page) {
+        return this.repository.findAllByEventRoute_IdAndLatestTransformation_CurrentStatusOrderByLastUpdateDesc(eventRouteId, eventTripStatus, new PageRequest(page, 20));
+    }
+
+    public HashMap<EventTripStatus, Long> countEventTrips(String eventRouteId) {
+        List<Object[]> objects = this.repository.countTripsOfRoute(eventRouteId);
+        return objects.stream().collect(HashMap<EventTripStatus, Long>::new,
+                (m, c) -> m.put((EventTripStatus) c[0], (Long) c[1]),
+                (m, u) -> {
+                });
     }
 
     public Iterable<EventTrip> getNewEventTrips() {

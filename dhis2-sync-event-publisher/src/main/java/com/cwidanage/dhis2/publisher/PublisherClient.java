@@ -1,5 +1,9 @@
 package com.cwidanage.dhis2.publisher;
 
+import com.cwidanage.dhis2.common.models.Event;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,9 +14,12 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.autoconfigure.jms.DefaultJmsListenerContainerFactoryConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.support.BasicAuthorizationInterceptor;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.jms.annotation.EnableJms;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 import org.springframework.jms.config.JmsListenerContainerFactory;
@@ -25,6 +32,8 @@ import javax.jms.ConnectionFactory;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,11 +71,35 @@ public class PublisherClient {
     }
 
     @Bean
+    @Primary
     public RestTemplate restTemplate() {
+        return createRestTemplate();
+    }
+
+    private RestTemplate createRestTemplate() {
         RestTemplate restTemplate = new RestTemplate();
         List<ClientHttpRequestInterceptor> interceptorList = new ArrayList<>();
         interceptorList.add(new BasicAuthorizationInterceptor(dhis2Username, dhis2Password));
         restTemplate.setInterceptors(interceptorList);
+        return restTemplate;
+    }
+
+    @Bean("eventPostRestTemplate")
+    public RestTemplate eventPostRestTemplate() {
+        RestTemplate restTemplate = this.createRestTemplate();
+
+        MappingJackson2HttpMessageConverter messageConverter = new MappingJackson2HttpMessageConverter();
+        messageConverter.setPrettyPrint(false);
+        restTemplate.getMessageConverters().removeIf(m -> m.getClass().getName().equals(MappingJackson2HttpMessageConverter.class.getName()));
+
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        objectMapper.setDateFormat(df);
+        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        messageConverter.setObjectMapper(objectMapper);
+
+        restTemplate.getMessageConverters().add(messageConverter);
         return restTemplate;
     }
 
@@ -78,6 +111,13 @@ public class PublisherClient {
         configurer.configure(factory, connectionFactory);
         // You could still override some of Boot's default if necessary.
         return factory;
+    }
+
+    public MessageConverter jacksonEventConverter() {
+        MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
+        converter.setTargetType(MessageType.TEXT);
+        converter.setTypeIdPropertyName("_type");
+        return converter;
     }
 
     @Bean // Serialize message content to json using TextMessage

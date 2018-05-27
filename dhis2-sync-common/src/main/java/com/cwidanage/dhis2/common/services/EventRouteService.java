@@ -39,6 +39,10 @@ public class EventRouteService {
         return repository.findAll();
     }
 
+    public EventRoute getById(String routeId) {
+        return this.repository.findOne(routeId);
+    }
+
     public EventRoute save(EventRoute eventRoute) {
         return this.repository.save(eventRoute);
     }
