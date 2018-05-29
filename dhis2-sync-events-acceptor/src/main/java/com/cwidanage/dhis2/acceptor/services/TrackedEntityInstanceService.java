@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -116,7 +117,7 @@ public class TrackedEntityInstanceService extends DHIS2TrackedEntityInstanceServ
                     TrackedEntityInstanceQueryResponse.class
             );
             return responseResponseEntity.getBody();
-        } catch (HttpClientErrorException ex) {
+        } catch (HttpClientErrorException | HttpServerErrorException ex) {
             logger.error("Failed TEI query request for TEI {}:{}", trackedEntityInstanceId, attributeValue, ex);
             return null;
         }

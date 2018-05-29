@@ -7,6 +7,7 @@ import {extractAxiosError} from "../../utils/AxiosUtils";
 import ButtonWithSpinner from "../common/ButtonWithSpinner";
 import "./NewEventRoutePopup.css";
 import ProgramStageSelector from "./ProgramStageSelector";
+import {FormGroup} from "@blueprintjs/core/lib/cjs/components/forms/formGroup";
 
 export default class NewEventRoutePopup extends React.Component {
 
@@ -17,7 +18,8 @@ export default class NewEventRoutePopup extends React.Component {
             sourceProgramStage: undefined,
             destinationInstanceId: undefined,
             destinationProgramStage: undefined,
-            savingInProgress: false
+            savingInProgress: false,
+            name: ''
         }
     }
 
@@ -33,7 +35,8 @@ export default class NewEventRoutePopup extends React.Component {
         axios.post(`${getUrl('eventRoutes')}`,
             {
                 sourceProgramStage: this.state.sourceProgramStage,
-                destinationProgramStage: this.state.destinationProgramStage
+                destinationProgramStage: this.state.destinationProgramStage,
+                name: this.state.name
             })
             .then(response => {
                 this.props.onRouteAdded(response.data);
@@ -73,11 +76,23 @@ export default class NewEventRoutePopup extends React.Component {
         });
     };
 
+    onNameChange = (event) => {
+        this.setState({
+            name: event.target.value
+        })
+    };
 
     render() {
         return (
             <Dialog isOpen={this.props.isOpen} title="Create Event Route" onClose={this.props.onClose}>
                 <div style={{padding: 10}}>
+                    <FormGroup
+                        label="Route Name"
+                        labelFor="name-text-input">
+                        <input id="name-text-input" placeholder="DNMS to NNIS risk events"
+                               value={this.state.name}
+                               className="pt-input pt-fill" onChange={this.onNameChange}/>
+                    </FormGroup>
                     <ProgramStageSelector title="Source Program Stage"
                                           ignoreInstanceId={this.state.destinationInstanceId}
                                           onInstanceChanged={this.onSourceInstanceChanged}

@@ -57,27 +57,31 @@ public class EventRouteService {
     }
 
 
-    @Transactional(readOnly = true)
-    public EventRoute createAndSaveEventRoute(String sourceProgramStageId, String destinationProgramStageId) {
-        EventRoute eventRoute = this.save(this.createEventRoute(sourceProgramStageId, destinationProgramStageId));
+    @Transactional
+    public EventRoute createAndSaveEventRoute(String sourceProgramStageId, String destinationProgramStageId, String name) {
+        EventRoute eventRoute = this.save(this.createEventRoute(sourceProgramStageId, destinationProgramStageId, name));
         this.createTripsForRoute(eventRoute);
         return eventRoute;
     }
 
     public void createTripsForRoute(EventRoute eventRoute) {
         logger.debug("Creating trips for route {}", eventRoute.getId());
-        try (Stream<TransmittableEvent> eventsStrean = transmittableEventRepository.streamAllByInstanceIdAndEvent_ProgramStage(
+        try (Stream<TransmittableEvent> eventsStream = transmittableEventRepository.streamAllByInstanceIdAndEvent_ProgramStage(
                 eventRoute.getSource().getDhis2Instance().getId(),
                 eventRoute.getSource().getId())) {
-            eventsStrean.forEach(transmittableEvent -> {
+            eventsStream.forEach(transmittableEvent -> {
                 logger.debug("Creating event trip for ", transmittableEvent.getId());
                 eventTripService.createAndSaveEventTrip(transmittableEvent, eventRoute);
             });
+            eventsStream.close();
+        } catch (Exception e) {
+            logger.error("Error in creating trips for route {}", eventRoute.getId(), e);
         }
     }
 
-    public EventRoute createEventRoute(String sourceProgramStageId, String destinationProgramStageId) {
+    public EventRoute createEventRoute(String sourceProgramStageId, String destinationProgramStageId, String name) {
         EventRoute eventRoute = new EventRoute();
+        eventRoute.setName(name);
         DHIS2InstanceProgramStage sourceProgramStage = d2iProgramStageService.getByIdentifier(sourceProgramStageId);
         if (sourceProgramStage == null) {
             throw new ValidationException("Selected source Program Stage is invalid");

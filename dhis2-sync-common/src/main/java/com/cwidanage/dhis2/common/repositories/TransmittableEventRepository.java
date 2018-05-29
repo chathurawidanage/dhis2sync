@@ -10,5 +10,7 @@ public interface TransmittableEventRepository extends CrudRepository<Transmittab
 
     Iterable<TransmittableEvent> findAllByLatestTransformation_CurrentStatus(TransmittableEventStatus transmittableEventStatus);
 
+    Stream<TransmittableEvent> streamAllByLatestTransformation_CurrentStatus(TransmittableEventStatus transmittableEventStatus);
+
     Stream<TransmittableEvent> streamAllByInstanceIdAndEvent_ProgramStage(String instanceId, String programStageId);
 }

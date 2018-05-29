@@ -2,8 +2,17 @@ package com.cwidanage.dhis2.acceptor.models;
 
 public class EventRouteCreateRequest {
 
+    private String name;
     private String sourceProgramStage;
     private String destinationProgramStage;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public String getSourceProgramStage() {
         return sourceProgramStage;

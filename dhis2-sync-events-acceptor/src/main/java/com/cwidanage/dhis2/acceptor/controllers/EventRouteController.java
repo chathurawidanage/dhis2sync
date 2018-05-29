@@ -31,7 +31,8 @@ public class EventRouteController {
     public EventRoute create(@RequestBody EventRouteCreateRequest eventRouteCreateRequest) {
         return eventRouteService.createAndSaveEventRoute(
                 eventRouteCreateRequest.getSourceProgramStage(),
-                eventRouteCreateRequest.getDestinationProgramStage()
+                eventRouteCreateRequest.getDestinationProgramStage(),
+                eventRouteCreateRequest.getName()
         );
     }
 

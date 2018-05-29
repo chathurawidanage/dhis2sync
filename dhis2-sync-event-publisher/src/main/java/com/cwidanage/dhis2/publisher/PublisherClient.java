@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -65,7 +66,7 @@ public class PublisherClient {
         try {
             URL resource = PublisherClient.class.getClassLoader().getResource(configFile);
             return Configuration.buildByFile(new File(resource.getFile()));
-        } catch (IllegalArgumentException ilex) {
+        } catch (IllegalArgumentException | NullPointerException ilex) {
             return Configuration.buildByFile(new File(configFile));
         }
     }
@@ -85,22 +86,26 @@ public class PublisherClient {
     }
 
     @Bean("eventPostRestTemplate")
-    public RestTemplate eventPostRestTemplate() {
+    public RestTemplate eventPostRestTemplate(@Autowired @Qualifier("eventPostResponseMapper") ObjectMapper objectMapper) {
         RestTemplate restTemplate = this.createRestTemplate();
 
         MappingJackson2HttpMessageConverter messageConverter = new MappingJackson2HttpMessageConverter();
         messageConverter.setPrettyPrint(false);
         restTemplate.getMessageConverters().removeIf(m -> m.getClass().getName().equals(MappingJackson2HttpMessageConverter.class.getName()));
+        messageConverter.setObjectMapper(objectMapper);
 
+        restTemplate.getMessageConverters().add(messageConverter);
+        return restTemplate;
+    }
+
+    @Bean("eventPostResponseMapper")
+    public ObjectMapper eventPostResponseMapper() {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.setDateFormat(df);
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        messageConverter.setObjectMapper(objectMapper);
-
-        restTemplate.getMessageConverters().add(messageConverter);
-        return restTemplate;
+        return objectMapper;
     }
 
     @Bean

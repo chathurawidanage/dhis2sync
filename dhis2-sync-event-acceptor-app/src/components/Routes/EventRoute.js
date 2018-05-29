@@ -29,41 +29,63 @@ export default class EventRoute extends React.Component {
         super(props);
         this.state = {
             routeId: this.props.match.params.routeId,
+            loadingRoute: false,
             route: undefined,
             stats: {},
+            loadingStats: false,
             tripState: "REJECTED_BY_DOWNSTREAM"
         }
+        this.pollingTimer = -1;
     }
 
+    setLoadingRoute = (loadingRoute) => {
+        this.setState({loadingRoute});
+    };
+
+    setLoadingStats = (loadingStats) => {
+        this.setState({loadingStats});
+    };
+
     loadRoute = () => {
+        this.setLoadingRoute(true);
         axios.get(getUrl(`eventRoutes/${this.state.routeId}`))
             .then(response => {
                 this.setState({
                     route: response.data
-                })
+                });
+                this.setLoadingRoute(false);
             })
             .catch(err => {
+                this.setLoadingRoute(false);
                 console.error("Error in loading event route");
                 showErrorToast(`Error in loading event routes : ${extractAxiosError(err)}`);
             })
     };
 
     loadStats = () => {
+        this.setLoadingStats(true);
         axios.get(getUrl(`eventTrips/count?routeId=${this.state.routeId}`))
             .then(response => {
                 this.setState({
                     stats: response.data
-                })
+                });
+                this.setLoadingStats(false);
             })
             .catch(err => {
                 console.error("Error in loading event route counts");
                 showErrorToast(`Error in loading event route counts : ${extractAxiosError(err)}`);
+                this.setLoadingStats(false);
             })
     };
 
     componentDidMount() {
         this.loadRoute();
         this.loadStats();
+        this.pollingTimer = setInterval(this.loadStats, 5000);
+    }
+
+    componentWillUnmount() {
+        clearTimeout(this.pollingTimer);
     }
 
     getEdgeMarkup = (edge) => {
@@ -143,47 +165,60 @@ export default class EventRoute extends React.Component {
                             </tbody>
                         </table>
                     </Card>
-                    <Card>
-                        <h5>Trips</h5>
-                        <div className="event-route-stat-wrapper">
-                            <div>
-                                <Button text="Refresh" icon="refresh" onClick={this.loadStats}/>
-                                <table className="pt-html-table">
-                                    <thead>
-                                    <tr>
-                                        <td>State</td>
-                                        <td>Count</td>
-                                        <td>Actions</td>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    {Object.keys(this.state.stats).map(key => {
-                                        return (
-                                            <tr key={key}>
-                                                <td>{key}</td>
-                                                <td>{this.state.stats[key]}</td>
-                                                <td>
-                                                    <Button text="Explore" small={true} onClick={() => {
-                                                        this.changeTripState(key)
-                                                    }}/>
-                                                </td>
+                    {
+                        Object.keys(this.state.stats).length > 0 &&
+                        <div>
+                            <Card>
+                                <h5>Trips</h5>
+                                <div className="event-route-stat-wrapper">
+                                    <div>
+                                        <Button text="Refresh" icon="refresh" onClick={this.loadStats}
+                                                loading={this.state.loadingStats}/>
+                                        <table className="pt-html-table">
+                                            <thead>
+                                            <tr>
+                                                <td>State</td>
+                                                <td>Count</td>
+                                                <td>Actions</td>
                                             </tr>
-                                        )
-                                    })}
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div>
-                                <Doughnut
-                                    options={{
-                                        maintainAspectRatio: false
-                                    }}
-                                    data={chartData} height={350}
-                                />
-                            </div>
+                                            </thead>
+                                            <tbody>
+                                            {Object.keys(this.state.stats).map(key => {
+                                                return (
+                                                    <tr key={key}>
+                                                        <td>{key}</td>
+                                                        <td>{this.state.stats[key]}</td>
+                                                        <td>
+                                                            <Button text="Explore" small={true} onClick={() => {
+                                                                this.changeTripState(key)
+                                                            }}/>
+                                                        </td>
+                                                    </tr>
+                                                )
+                                            })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div>
+                                        <Doughnut
+                                            options={{
+                                                maintainAspectRatio: false
+                                            }}
+                                            data={chartData} height={350}
+                                        />
+                                    </div>
+                                </div>
+                            </Card>
+                            <EventTripsCard state={this.state.tripState} route={this.state.routeId}/>
                         </div>
-                    </Card>
-                    <EventTripsCard state={this.state.tripState} route={this.state.routeId}/>
+                    }
+                    {
+                        Object.keys(this.state.stats).length === 0 &&
+                        <Card>
+                            <h5>Trips</h5>
+                            <p className="text-center">No trips in this route yet</p>
+                        </Card>
+                    }
                 </div>
             </div>
         );

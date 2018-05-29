@@ -1,11 +1,11 @@
 import React from "react";
 import {Card} from "@blueprintjs/core";
-import {Spinner} from "@blueprintjs/core/lib/cjs/components/spinner/spinner";
 import axios from "axios";
 import {getUrl} from "../../Constants";
 import {showErrorToast, showSuccessToast} from "../../utils/ToastUtils";
 import {extractAxiosError} from "../../utils/AxiosUtils";
 import {Button} from "@blueprintjs/core/lib/cjs/components/button/buttons";
+import LoadingComponent from "../common/LoadingComponent";
 
 export default class EventTripsCard extends React.Component {
 
@@ -24,7 +24,9 @@ export default class EventTripsCard extends React.Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.loadTrips(nextProps);
+        if (nextProps.state !== this.props.state) {
+            this.loadTrips(nextProps);
+        }
     }
 
     loadTrips = (props = this.props) => {
@@ -56,9 +58,7 @@ export default class EventTripsCard extends React.Component {
         return (
             <Card>
                 <h5>{this.props.state}</h5>
-                {this.state.loading && <Spinner/>}
-                {
-                    !this.state.loading &&
+                <LoadingComponent loading={this.state.loading}>
                     <table className="pt-html-table pt-html-table-striped pt-fill" width="100%">
                         <thead>
                         <tr>
@@ -101,9 +101,9 @@ export default class EventTripsCard extends React.Component {
                         })}
                         </tbody>
                     </table>
-                }
-                {this.state.trips && this.state.trips.length === 0 &&
-                <p className="text-center">No event trips in this category</p>}
+                    {this.state.trips && this.state.trips.length === 0 &&
+                    <p className="text-center">No event trips in this category</p>}
+                </LoadingComponent>
             </Card>
         )
     }

@@ -6,6 +6,7 @@ import NewDHIS2InstancePopup from "./NewDHIS2InstancePopup";
 import {Link} from "react-router-dom";
 import {showErrorToast} from "../../utils/ToastUtils";
 import {extractAxiosError} from "../../utils/AxiosUtils";
+import LoadingComponent from "../common/LoadingComponent";
 
 /**
  * @author Chathura Widanage
@@ -16,7 +17,8 @@ export default class DHIS2InstancesManager extends React.Component {
         super(props);
         this.state = {
             instances: [],
-            newDialogVisible: false
+            newDialogVisible: false,
+            loading: false
         }
     }
 
@@ -24,16 +26,23 @@ export default class DHIS2InstancesManager extends React.Component {
         this.refreshInstances();
     }
 
+    setLoading = (loading) => {
+        this.setState({loading})
+    };
+
     refreshInstances = () => {
+        this.setLoading(true)
         axios.get(`${getUrl('dhis2Instances')}`)
             .then(response => {
                 this.setState({
                     instances: response.data
-                })
+                });
+                this.setLoading(false);
             })
             .catch(err => {
                 console.error("Error in fetching dhis2 instances", err);
                 showErrorToast(`Error in fetching dhis2 instances : ${extractAxiosError(err)}`)
+                this.setLoading(false)
             })
     };
 
@@ -71,36 +80,37 @@ export default class DHIS2InstancesManager extends React.Component {
                 <NewDHIS2InstancePopup onInstanceAdded={this.onInstanceAdded}
                                        onClose={this.closeDialog}
                                        isOpen={this.state.newDialogVisible}/>
-
-                <table className="pt-html-table pt-html-table-striped" style={{width: '100%'}}>
-                    <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>URL</th>
-                        <th>Description</th>
-                        <th>Sync Status</th>
-                        <th></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {
-                        this.state.instances && this.state.instances.map(instance => {
-                            return <tr key={instance.id}>
-                                <td>{instance.id}</td>
-                                <td>{instance.url}</td>
-                                <td>{instance.description}</td>
-                                <td>{instance.syncEnabled ? "STARTED" : "STOPPED"}</td>
-                                <td>
-                                    <Link to={"/dhis2Instances/" + instance.id}
-                                          className="pt-button pt-icon-cog pt-small">
-                                        Configure
-                                    </Link>
-                                </td>
-                            </tr>
-                        })
-                    }
-                    </tbody>
-                </table>
+                <LoadingComponent loading={this.state.loading}>
+                    <table className="pt-html-table pt-html-table-striped" style={{width: '100%'}}>
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>URL</th>
+                            <th>Description</th>
+                            <th>Sync Status</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {
+                            this.state.instances && this.state.instances.map(instance => {
+                                return <tr key={instance.id}>
+                                    <td>{instance.id}</td>
+                                    <td>{instance.url}</td>
+                                    <td>{instance.description}</td>
+                                    <td>{instance.syncEnabled ? "STARTED" : "STOPPED"}</td>
+                                    <td>
+                                        <Link to={"/dhis2Instances/" + instance.id}
+                                              className="pt-button pt-icon-cog pt-small">
+                                            Configure
+                                        </Link>
+                                    </td>
+                                </tr>
+                            })
+                        }
+                        </tbody>
+                    </table>
+                </LoadingComponent>
             </div>
         );
     }

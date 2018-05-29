@@ -1,22 +1,23 @@
 package com.cwidanage.dhis2.publisher.services;
 
+import com.cwidanage.dhis2.common.models.Event;
 import com.cwidanage.dhis2.common.models.Setting;
 import com.cwidanage.dhis2.common.models.TransmittableEvent;
-import com.cwidanage.dhis2.common.repositories.EventRepository;
-import com.cwidanage.dhis2.common.repositories.TransmittableEventRepository;
 import com.cwidanage.dhis2.common.services.SettingService;
 import com.cwidanage.dhis2.common.services.TransmittableEventService;
 import com.cwidanage.dhis2.publisher.Configuration;
 import com.cwidanage.dhis2.publisher.models.EventsResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.cache2k.Cache;
-import org.cache2k.Cache2kBuilder;
+import org.mapdb.DB;
+import org.mapdb.DBMaker;
+import org.mapdb.HTreeMap;
+import org.mapdb.Serializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jms.core.JmsTemplate;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 
 @Service
 @EnableScheduling
+@EnableAsync
 public class EventFetchService {
 
     private final static Logger logger = LogManager.getLogger(EventFetchService.class);
@@ -56,13 +58,14 @@ public class EventFetchService {
     @Autowired
     private SettingService settingService;
 
-    private Cache<String, Boolean> fetchedEventsCache = new Cache2kBuilder<String, Boolean>() {
-    }
-            .expireAfterWrite(1, TimeUnit.DAYS)
-            .resilienceDuration(30, TimeUnit.SECONDS)
-            .build();
+    private DB slowDB = DBMaker
+            .fileDB("fetchedEventsCache").make();
 
-    @Async
+
+    private HTreeMap.KeySet<String> slowEventIdSet = slowDB.hashSet("slowEventIdSet", Serializer.STRING)
+            .expireAfterCreate(1, TimeUnit.DAYS)
+            .create();
+
     @Scheduled(fixedDelay = 1000 * 30)
     public void fetch() {
 
@@ -83,7 +86,7 @@ public class EventFetchService {
             program.getProgramStages().forEach(programStage -> {
 
                 Setting lastFetchedDateSetting = this.settingService.getValue(SETTING_LAST_FETCHED_DATE + "_" + programStage.getId());
-                final String lastFetchedDate = lastFetchedDateSetting != null ? lastFetchedDateSetting.getValue() : "2018-05-15";
+                final String lastFetchedDate = lastFetchedDateSetting != null ? lastFetchedDateSetting.getValue() : "2010-05-15";
                 String nextFetchDate = simpleDateFormat.format(this.getOneDayLessToday());
                 logger.debug("Last fetch date of events of {} : {}", programStage.getId(), lastFetchedDate);
 
@@ -98,22 +101,35 @@ public class EventFetchService {
                     EventsResponse eventsResponse = this.fetchPage(uriComponentsBuilder, pageToFetch);
                     totalPages = eventsResponse.getPager().getPageCount();
                     pageToFetch = eventsResponse.getPager().getPage() + 1;
-                    List<TransmittableEvent> transmittableEvents = eventsResponse.getEvents()
-                            .stream()
-                            .filter(event -> (!fetchedEventsCache.containsKey(event.getEvent()) && !dhis2Username.equals(event.getStoredBy())))
-                            .map(event -> new TransmittableEvent(event, this.configuration.getInstanceId()))
-                            .collect(Collectors.toList());
-                    logger.debug("Filtered out {} already sent events out of {}", eventsResponse.getEvents().size() - transmittableEvents.size(), eventsResponse.getEvents().size());
-                    transmittableEventService.save(transmittableEvents);
-                    transmittableEvents.forEach(transmittableEvent -> {
-                        fetchedEventsCache.put(transmittableEvent.getEvent().getEvent(), true);
-                    });
-                } while (pageToFetch < totalPages && pageToFetch < 5);
+                    processEventResponse(eventsResponse);
+                } while (pageToFetch < totalPages);
 
                 logger.debug("Setting next fetch date of {} to {}", programStage.getId(), nextFetchDate);
                 settingService.setValue(SETTING_LAST_FETCHED_DATE + "_" + programStage.getId(), nextFetchDate);
             });
         });
+    }
+
+    private boolean shouldProcessEvent(Event event) {
+        return !dhis2Username.equals(event.getStoredBy()) && !this.slowEventIdSet.contains(event.getEvent());
+    }
+
+    public void putInCache(String eventId) {
+        this.slowEventIdSet.add(eventId);
+    }
+
+    @Async
+    public void processEventResponse(EventsResponse eventsResponse) {
+        List<TransmittableEvent> transmittableEvents = eventsResponse.getEvents()
+                .stream()
+                .filter(this::shouldProcessEvent)
+                .map(event -> new TransmittableEvent(event, this.configuration.getInstanceId()))
+                .collect(Collectors.toList());
+        logger.debug("Filtered out {} already sent events out of {}", eventsResponse.getEvents().size() - transmittableEvents.size(), eventsResponse.getEvents().size());
+        transmittableEventService.save(transmittableEvents);
+
+        //adding to cache
+        transmittableEvents.forEach(transmittableEvent -> this.putInCache(transmittableEvent.getEvent().getEvent()));
     }
 
     private Date getOneDayLessToday() {

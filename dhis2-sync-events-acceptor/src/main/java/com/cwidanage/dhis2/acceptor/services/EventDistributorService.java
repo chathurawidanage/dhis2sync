@@ -1,7 +1,7 @@
 package com.cwidanage.dhis2.acceptor.services;
 
+import com.cwidanage.dhis2.common.constants.EventTripStatus;
 import com.cwidanage.dhis2.common.models.sync.EventTrip;
-import com.cwidanage.dhis2.common.models.sync.dhis2.DHIS2InstanceDataElement;
 import com.cwidanage.dhis2.common.services.EventTripService;
 import com.cwidanage.dhis2.common.services.dhis2.DHIS2EventService;
 import com.cwidanage.dhis2.common.services.dhis2.DHIS2InstanceDataElementService;
@@ -9,19 +9,17 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.*;
 
 /**
  * @author Chathura Widanage
  */
 @Service
 @EnableScheduling
+@EnableAsync
 public class EventDistributorService {
 
     private final Logger logger = LogManager.getLogger(EventDistributorService.class);
@@ -38,33 +36,29 @@ public class EventDistributorService {
     @Autowired
     private DHIS2InstanceDataElementService dhis2InstanceDataElementService;
 
-    private ExecutorService newEventProcessor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    @Scheduled(fixedDelay = 1000)
+    public void distributeNewEvent() {
+        Iterable<EventTrip> newEventTrips = this.eventTripService.getNewEventTrips();
+        newEventTrips.forEach(this::processTrip);
+    }
 
     @Async
-    @Scheduled(fixedDelay = 1000 * 30)
-    public void distributeNewEvent() {
-        logger.debug("Starting event distribution task");
-        Iterable<EventTrip> newEventTrips = this.eventTripService.getNewEventTrips();
-
-        List<Future<EventTrip>> tripProcessingFuture = new ArrayList<>();
-        newEventTrips.forEach(newEventTrip -> {
-            tripProcessingFuture.add(newEventProcessor.submit(
-                    new AsyncEventTripHandler(
-                            newEventTrip,
-                            trackedEntityInstanceService,
-                            eventTripService,
-                            dhis2EventService,
-                            dhis2InstanceDataElementService
-                    )));
-        });
-
-        for (Future<EventTrip> future : tripProcessingFuture) {
-            try {
-                EventTrip eventTrip = future.get();
-                logger.debug("Event trip processing handler returned without issues", eventTrip.getId());
-            } catch (InterruptedException | ExecutionException e) {
-                logger.error("Error occurred when handling event trip", e);
-            }
+    public void processTrip(EventTrip eventTrip) {
+        AsyncEventTripHandler asyncEventTripHandler = new AsyncEventTripHandler(
+                eventTrip,
+                trackedEntityInstanceService,
+                eventTripService,
+                dhis2EventService,
+                dhis2InstanceDataElementService
+        );
+        try {
+            EventTrip handledEvent = asyncEventTripHandler.handle();
+            logger.debug("Event trip processing handler  of {} returned without issues. Final status {}",
+                    handledEvent.getId(), handledEvent.getLatestTransformation().getCurrentStatus());
+        } catch (Exception e) {
+            logger.error("Error in handling event trip {}", eventTrip.getId(), e);
+            eventTripService.transformStatus(eventTrip, EventTripStatus.ERROR_IN_HANDLING_TRIP, e.getMessage());
+            eventTripService.save(eventTrip);
         }
     }
 }

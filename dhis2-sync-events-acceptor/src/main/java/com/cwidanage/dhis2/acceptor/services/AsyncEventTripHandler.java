@@ -17,15 +17,15 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
-public class AsyncEventTripHandler implements Callable<EventTrip> {
+public class AsyncEventTripHandler {
 
     private final Logger logger = LogManager.getLogger(AsyncEventTripHandler.class);
 
@@ -60,7 +60,16 @@ public class AsyncEventTripHandler implements Callable<EventTrip> {
         DHIS2Instance sourceInstance = this.eventTrip.getEventRoute().getSource().getDhis2Instance();
         String trackedEntityInstanceId = this.eventTrip.getTransmittableEvent().getEvent().getTrackedEntityInstance();
 
-        DHIS2InstanceTrackedEntityInstance sourceInstanceTEI = teiService.findByTEIId(sourceInstance, trackedEntityInstanceId);
+        DHIS2InstanceTrackedEntityInstance sourceInstanceTEI = null;
+
+        try {
+            sourceInstanceTEI = teiService.findByTEIId(sourceInstance, trackedEntityInstanceId);
+        } catch (RestClientException restEx) {
+            logger.error("Couldn't query for TEI in source", restEx);
+            this.eventTripService.transformStatus(this.eventTrip, EventTripStatus.UPSTREAM_OFFLINE,
+                    "Couldn't query for TEI in source : " + restEx.getMessage());
+            return false;
+        }
 
         if (sourceInstanceTEI == null) {
             logger.debug("Couldn't find unique TEI attribute in source for {}", trackedEntityInstanceId);
@@ -72,10 +81,20 @@ public class AsyncEventTripHandler implements Callable<EventTrip> {
 
         //resolve destination
         DHIS2Instance destinationInstance = this.eventTrip.getEventRoute().getDestination().getDhis2Instance();
-        DHIS2InstanceTrackedEntityInstance destinationTEI = sourceInstanceTEI.getTrackedEntityInstanceIdentifier()
-                .getInstancesMap()
-                .getOrDefault(destinationInstance, teiService.findByAttributeValue(destinationInstance,
-                        sourceInstanceTEI.getTrackedEntityInstanceIdentifier().getId()));
+        DHIS2InstanceTrackedEntityInstance destinationTEI = null;
+
+        try {
+            destinationTEI = sourceInstanceTEI.getTrackedEntityInstanceIdentifier()
+                    .getInstancesMap()
+                    .getOrDefault(destinationInstance, teiService.findByAttributeValue(destinationInstance,
+                            sourceInstanceTEI.getTrackedEntityInstanceIdentifier().getId()));
+        } catch (RestClientException restEx) {
+            logger.error("Couldn't query for TEI in destination of trip {}", eventTrip.getId(), restEx);
+            this.eventTripService.transformStatus(this.eventTrip, EventTripStatus.DOWNSTREAM_OFFLINE,
+                    "Couldn't query for TEI in destination : " + restEx.getMessage());
+            return false;
+        }
+
         if (destinationTEI == null) {
             logger.debug("Couldn't find  unique TEI attribute in destination for {} with attribute",
                     trackedEntityInstanceId,
@@ -98,6 +117,7 @@ public class AsyncEventTripHandler implements Callable<EventTrip> {
         //initializing lazy attributes
         Event event = transmittableEvent.getEvent();//this.dhis2EventService.loadEventAttributes(transmittableEvent.getEvent().getId());
 
+        //todo check data elements of destination program stage
         //data values
         List<DataValue> dataValues = event.getDataValues();
         List<DataValue> newDataValues = dataValues.stream().map(dataValue -> {
@@ -125,18 +145,36 @@ public class AsyncEventTripHandler implements Callable<EventTrip> {
     }
 
     public void transferEvent() {
-        logger.debug("Transferring event {}", this.sendingEvent);
+        logger.debug("Transferring event on trip {}", this.eventTrip.getId());
         UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUriString(
                 this.eventTrip.getEventRoute().getDestination().getDhis2Instance().getUrl()
         );
         uriComponentsBuilder.path("events");
 
-        ResponseEntity<EventPersistResponse> eventResponseEntity = this.restTemplate.postForEntity(uriComponentsBuilder.toUriString(), this.sendingEvent, EventPersistResponse.class);
+        ResponseEntity<EventPersistResponse> eventResponseEntity;
+        try {
+            eventResponseEntity = this.restTemplate.postForEntity(uriComponentsBuilder.toUriString(), this.sendingEvent, EventPersistResponse.class);
+        } catch (RestClientException restEx) {
+            logger.error("Couldn't transmit the event to destination", restEx);
+            this.eventTripService.transformStatus(this.eventTrip, EventTripStatus.DOWNSTREAM_OFFLINE,
+                    "Couldn't transmit the event to destination : " + restEx.getMessage());
+            return;
+        }
+
         if (eventResponseEntity.getStatusCode().equals(HttpStatus.OK)) {
             EventPersistResponse eventPersistResponse = eventResponseEntity.getBody();
             if (eventPersistResponse.getHttpStatusCode() != 200) {
-                logger.debug("Event trip {} rejected by down stream {}", eventTrip.getId(), eventPersistResponse.getMessage());
-                this.eventTripService.transformStatus(this.eventTrip, EventTripStatus.REJECTED_BY_DOWNSTREAM, eventPersistResponse.getMessage());
+                String errorMessage = eventPersistResponse.getMessage();
+                if (eventPersistResponse.getResponse() != null
+                        && eventPersistResponse.getResponse().getImportSummaries() != null
+                        && !eventPersistResponse.getResponse().getImportSummaries().isEmpty()) {
+                    String importSummaryDescription = eventPersistResponse.getResponse().getImportSummaries().get(0).getDescription();
+                    if (importSummaryDescription != null) {
+                        errorMessage = importSummaryDescription;
+                    }
+                }
+                logger.debug("Event trip {} rejected by down stream {}", eventTrip.getId(), errorMessage);
+                this.eventTripService.transformStatus(this.eventTrip, EventTripStatus.REJECTED_BY_DOWNSTREAM, errorMessage);
             } else if (eventPersistResponse.getResponse() == null) {
                 logger.debug("Event trip {} returned with a null response", eventTrip.getId());
                 this.eventTripService.transformStatus(this.eventTrip, EventTripStatus.REJECTED_BY_DOWNSTREAM, "Null response in persist request");
@@ -163,8 +201,8 @@ public class AsyncEventTripHandler implements Callable<EventTrip> {
         }
     }
 
-    @Override
-    public EventTrip call() throws Exception {
+
+    public EventTrip handle() throws Exception {
         logger.debug("Starting to process event trip {}", eventTrip.getId());
         boolean trackedEntityResolved = this.resolveTrackedEntityInstance();
         if (trackedEntityResolved) {

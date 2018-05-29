@@ -43,12 +43,22 @@ public class EventTripService {
         //eventTrip.getEventTripStatusTransformations().add(eventTripStatusTransformation);
     }
 
+    /**
+     * Create a new event trip or reinitialize if already existing
+     *
+     * @param transmittableEvent Transmittable event to create trip with
+     * @param eventRoute         Route of the trip
+     * @return Created or reinitialized trip
+     */
     public EventTrip createEventTrip(TransmittableEvent transmittableEvent, EventRoute eventRoute) {
-        EventTrip eventTrip = new EventTrip();
-        eventTrip.setTransmittableEvent(transmittableEvent);
-        eventTrip.setEventRoute(eventRoute);
-        eventTrip.setId(String.format("%s_%s", transmittableEvent.getId(), eventRoute.getId()));
-
+        String eventTripId = String.format("%s_%s", transmittableEvent.getId(), eventRoute.getId());
+        EventTrip eventTrip = this.repository.findOne(eventTripId);
+        if (eventTrip == null) {
+            eventTrip = new EventTrip();
+            eventTrip.setTransmittableEvent(transmittableEvent);
+            eventTrip.setEventRoute(eventRoute);
+            eventTrip.setId(eventTripId);
+        }
         this.transformStatus(eventTrip, EventTripStatus.INITIALIZED, null);
         return eventTrip;
     }

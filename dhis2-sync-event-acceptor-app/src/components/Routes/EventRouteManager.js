@@ -1,12 +1,12 @@
 import React from "react";
 import Link from "react-router-dom/es/Link";
-import {ButtonGroup, Button} from "@blueprintjs/core";
+import {Button, ButtonGroup, Switch} from "@blueprintjs/core";
 import NewEventRoutePopup from "./NewEventRoutePopup";
 import axios from "axios";
 import {getUrl} from "../../Constants";
 import {showErrorToast, showSuccessToast} from "../../utils/ToastUtils";
 import {extractAxiosError} from "../../utils/AxiosUtils";
-import {Switch} from "@blueprintjs/core";
+import LoadingComponent from "../common/LoadingComponent";
 
 /**
  * @author Chathura Widanage
@@ -17,7 +17,8 @@ export default class EventRouteManager extends React.Component {
         super(props);
         this.state = {
             newDialogVisible: false,
-            routes: []
+            routes: [],
+            loading: false
         }
     }
 
@@ -25,13 +26,20 @@ export default class EventRouteManager extends React.Component {
         this.refreshRoutes();
     }
 
+    setLoading = (loading) => {
+        this.setState({loading})
+    };
+
     refreshRoutes = () => {
+        this.setLoading(true);
         axios.get(getUrl('eventRoutes')).then(response => {
             this.setState({
                 routes: response.data
-            })
+            });
+            this.setLoading(false);
         }).catch(err => {
             showErrorToast(`Failed to load event routes : ${extractAxiosError(err)}`);
+            this.setLoading(false);
         });
     };
 
@@ -69,6 +77,7 @@ export default class EventRouteManager extends React.Component {
         let routes = this.state.routes.map((route, index) => {
             return (
                 <tr key={index}>
+                    <td>{route.name}</td>
                     <td>{route.source.identifier.split("_")[0]}</td>
                     <td>{route.source.displayName}</td>
                     <td>{route.destination.identifier.split("_")[0]}</td>
@@ -102,21 +111,24 @@ export default class EventRouteManager extends React.Component {
                 <NewEventRoutePopup onRouteAdded={this.onRouteAdded}
                                     onClose={this.closeDialog}
                                     isOpen={this.state.newDialogVisible}/>
-                <table className="pt-html-table pt-html-table-striped" style={{width: '100%'}}>
-                    <thead>
-                    <tr>
-                        <td>Source Instance</td>
-                        <td>Source Program Stage</td>
-                        <td>Destination Instance</td>
-                        <td>Destination Program Stage</td>
-                        <td>Status</td>
-                        <td>Actions</td>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {routes}
-                    </tbody>
-                </table>
+                <LoadingComponent loading={this.state.loading}>
+                    <table className="pt-html-table pt-html-table-striped" style={{width: '100%'}}>
+                        <thead>
+                        <tr>
+                            <td>Name</td>
+                            <td>Source Instance</td>
+                            <td>Source Program Stage</td>
+                            <td>Destination Instance</td>
+                            <td>Destination Program Stage</td>
+                            <td>Status</td>
+                            <td>Actions</td>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {routes}
+                        </tbody>
+                    </table>
+                </LoadingComponent>
             </div>
         )
     }

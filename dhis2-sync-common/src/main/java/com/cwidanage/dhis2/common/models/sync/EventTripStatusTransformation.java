@@ -21,6 +21,7 @@ public class EventTripStatusTransformation {
     @Enumerated(EnumType.STRING)
     private EventTripStatus currentStatus;
 
+    @Column(length = 4048)
     private String message;
 
     private Date timestamp;
