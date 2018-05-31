@@ -8,25 +8,18 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.JmsException;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.stream.Stream;
 
 /**
  * @author Chathura Widanage
  */
 @Service
 @EnableScheduling
-@EnableAsync
 public class EventPublisherService {
 
     private static final Logger logger = LogManager.getLogger(EventPublisherService.class);
-
 
     @Autowired
     private JmsTemplate jmsTemplate;
@@ -34,15 +27,12 @@ public class EventPublisherService {
     @Autowired
     private TransmittableEventService transmittableEventService;
 
-    @Scheduled(fixedDelay = 1000 * 30)
-    @Transactional(readOnly = true)
+    @Scheduled(fixedDelay = 10000)
     public void publishEvents() {
-        try (Stream<TransmittableEvent> fetchedEvents = transmittableEventService.getEventsWithStatus(TransmittableEventStatus.FETCHED_FROM_SOURCE)) {
-            fetchedEvents.forEach(this::publishEvent);
-        }
+        Iterable<TransmittableEvent> fetchedEvents = transmittableEventService.getEventsWithStatus(TransmittableEventStatus.FETCHED_FROM_SOURCE);
+        fetchedEvents.forEach(this::publishEvent);
     }
 
-    @Async
     public void publishEvent(TransmittableEvent transmittableEvent) {
         try {
             logger.debug("Transmitting event {}", transmittableEvent.getId());

@@ -28,9 +28,6 @@ public class TrackedEntityInstanceService extends DHIS2TrackedEntityInstanceServ
     private final Logger logger = LogManager.getLogger(TrackedEntityInstanceService.class);
 
     @Autowired
-    private DHIS2TrackedEntityInstanceRepository repository;
-
-    @Autowired
     private TrackedEntityInstanceIdentifierService teiIdentifierService;
 
     public DHIS2InstanceTrackedEntityInstance findByTEIId(DHIS2Instance dhis2Instance, String trackedEntityInstanceId) {

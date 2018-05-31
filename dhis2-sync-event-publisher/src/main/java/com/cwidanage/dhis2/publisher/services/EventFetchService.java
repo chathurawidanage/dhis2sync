@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.annotation.PreDestroy;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -65,6 +66,11 @@ public class EventFetchService {
     private HTreeMap.KeySet<String> slowEventIdSet = slowDB.hashSet("slowEventIdSet", Serializer.STRING)
             .expireAfterCreate(1, TimeUnit.DAYS)
             .create();
+
+    @PreDestroy
+    public void onDestroy() {
+        this.slowDB.close();
+    }
 
     @Scheduled(fixedDelay = 1000 * 30)
     public void fetch() {
@@ -118,7 +124,6 @@ public class EventFetchService {
         this.slowEventIdSet.add(eventId);
     }
 
-    @Async
     public void processEventResponse(EventsResponse eventsResponse) {
         List<TransmittableEvent> transmittableEvents = eventsResponse.getEvents()
                 .stream()

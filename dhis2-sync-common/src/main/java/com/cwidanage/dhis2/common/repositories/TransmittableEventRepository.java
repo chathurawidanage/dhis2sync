@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 
 public interface TransmittableEventRepository extends CrudRepository<TransmittableEvent, String> {
 
-    Iterable<TransmittableEvent> findAllByLatestTransformation_CurrentStatus(TransmittableEventStatus transmittableEventStatus);
+    Iterable<TransmittableEvent> findTop100ByLatestTransformation_CurrentStatus(TransmittableEventStatus transmittableEventStatus);
 
     Stream<TransmittableEvent> streamAllByLatestTransformation_CurrentStatus(TransmittableEventStatus transmittableEventStatus);
 

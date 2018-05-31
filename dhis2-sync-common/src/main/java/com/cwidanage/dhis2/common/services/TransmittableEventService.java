@@ -37,8 +37,8 @@ public class TransmittableEventService {
         return this.repository.findOne(id);
     }
 
-    public Stream<TransmittableEvent> getEventsWithStatus(TransmittableEventStatus eventStatus) {
-        return this.repository.streamAllByLatestTransformation_CurrentStatus(eventStatus);
+    public Iterable<TransmittableEvent> getEventsWithStatus(TransmittableEventStatus eventStatus) {
+        return this.repository.findTop100ByLatestTransformation_CurrentStatus(eventStatus);
     }
 
     @Transactional(readOnly = true)

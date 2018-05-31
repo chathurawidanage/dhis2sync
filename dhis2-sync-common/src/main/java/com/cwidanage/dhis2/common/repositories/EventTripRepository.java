@@ -11,10 +11,13 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public interface EventTripRepository extends CrudRepository<EventTrip, String> {
 
-    Iterable<EventTrip> findTop20ByLatestTransformation_CurrentStatusOrderByLastUpdate(EventTripStatus eventTripStatus);
+    Iterable<EventTrip> findTop200ByLatestTransformation_CurrentStatusOrderByLastUpdate(EventTripStatus eventTripStatus);
+
+    Stream<EventTrip> streamAllByLatestTransformation_CurrentStatusOrderByLastUpdate(EventTripStatus eventTripStatus);
 
     Page<EventTrip> findAllByEventRoute_IdAndLatestTransformation_CurrentStatusOrderByLastUpdateDesc(String eventRouteId, EventTripStatus eventTripStatus, Pageable pageable);
 

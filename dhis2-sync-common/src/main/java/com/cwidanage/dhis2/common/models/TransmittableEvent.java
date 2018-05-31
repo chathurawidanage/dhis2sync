@@ -28,11 +28,8 @@ public class TransmittableEvent {
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<EventTrip> eventTrips = new HashSet<>();
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private EventStatusTransformation latestTransformation;
-
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private Set<EventStatusTransformation> statusTransformations = new HashSet<>();
 
     public TransmittableEvent() {
     }
@@ -43,7 +40,6 @@ public class TransmittableEvent {
         this.instanceId = instanceId;
         this.latestTransformation = new EventStatusTransformation();
         this.latestTransformation.setCurrentStatus(TransmittableEventStatus.FETCHED_FROM_SOURCE);
-        this.statusTransformations.add(this.latestTransformation);
     }
 
     public Set<EventTrip> getEventTrips() {
@@ -86,14 +82,6 @@ public class TransmittableEvent {
         this.latestTransformation = latestTransformation;
     }
 
-    public Set<EventStatusTransformation> getStatusTransformations() {
-        return statusTransformations;
-    }
-
-    public void setStatusTransformations(Set<EventStatusTransformation> statusTransformations) {
-        this.statusTransformations = statusTransformations;
-    }
-
     @Override
     public String toString() {
         return "TransmittableEvent{" +
@@ -101,7 +89,6 @@ public class TransmittableEvent {
                 ", event=" + event +
                 ", instanceId='" + instanceId + '\'' +
                 ", latestTransformation=" + latestTransformation +
-                ", statusTransformations=" + statusTransformations +
                 '}';
     }
 }

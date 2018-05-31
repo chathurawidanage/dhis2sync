@@ -12,12 +12,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class EventTripService {
@@ -72,7 +69,7 @@ public class EventTripService {
     }
 
     public Iterable<EventTrip> getEventTipsWithStatus(EventTripStatus eventTripStatus) {
-        return repository.findTop20ByLatestTransformation_CurrentStatusOrderByLastUpdate(eventTripStatus);
+        return repository.findTop200ByLatestTransformation_CurrentStatusOrderByLastUpdate(eventTripStatus);
     }
 
     public EventTrip reInitializeTrip(String tripId) {

@@ -25,11 +25,8 @@ public class EventTrip {
     //saves destination event id when event is persisted for the first time
     private String destinationEventId;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private EventTripStatusTransformation latestTransformation;
-
-    @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
-    private Set<EventTripStatusTransformation> eventTripStatusTransformations = new HashSet<>();
 
     private Date lastUpdate;
 
@@ -63,14 +60,6 @@ public class EventTrip {
 
     public void setLatestTransformation(EventTripStatusTransformation latestTransformation) {
         this.latestTransformation = latestTransformation;
-    }
-
-    public Set<EventTripStatusTransformation> getEventTripStatusTransformations() {
-        return eventTripStatusTransformations;
-    }
-
-    public void setEventTripStatusTransformations(Set<EventTripStatusTransformation> eventTripStatusTransformations) {
-        this.eventTripStatusTransformations = eventTripStatusTransformations;
     }
 
     public Date getLastUpdate() {

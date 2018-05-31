@@ -23,9 +23,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
-public class AsyncEventTripHandler {
+public class AsyncEventTripHandler implements Callable<EventTrip> {
 
     private final Logger logger = LogManager.getLogger(AsyncEventTripHandler.class);
 
@@ -35,7 +36,6 @@ public class AsyncEventTripHandler {
 
     private TrackedEntityInstanceService teiService;
     private EventTripService eventTripService;
-    private DHIS2EventService dhis2EventService;
     private DHIS2InstanceDataElementService dhis2InstanceDataElementService;
 
     private Event sendingEvent;
@@ -50,7 +50,6 @@ public class AsyncEventTripHandler {
         this.teiService = teiService;
         this.dhis2InstanceDataElementService = dhis2InstanceDataElementService;
         this.eventTripService = eventTripService;
-        this.dhis2EventService = dhis2EventService;
         this.sendingEvent = new Event();
     }
 
@@ -112,7 +111,7 @@ public class AsyncEventTripHandler {
         return true;
     }
 
-    public boolean resolveEventAttributes() {
+    private void resolveEventAttributes() {
         TransmittableEvent transmittableEvent = this.eventTrip.getTransmittableEvent();
         //initializing lazy attributes
         Event event = transmittableEvent.getEvent();//this.dhis2EventService.loadEventAttributes(transmittableEvent.getEvent().getId());
@@ -140,8 +139,6 @@ public class AsyncEventTripHandler {
         this.sendingEvent.setEventDate(event.getEventDate());
         this.sendingEvent.setLastUpdated(event.getLastUpdated());
         this.sendingEvent.setEvent(this.eventTrip.getDestinationEventId());
-
-        return false;
     }
 
     public void transferEvent() {
@@ -201,22 +198,27 @@ public class AsyncEventTripHandler {
         }
     }
 
-
-    public EventTrip handle() throws Exception {
+    @Override
+    public EventTrip call() throws Exception {
         logger.debug("Starting to process event trip {}", eventTrip.getId());
-        boolean trackedEntityResolved = this.resolveTrackedEntityInstance();
-        if (trackedEntityResolved) {
-            //resolving data elements
-            boolean dataElementsResolved = this.resolveEventAttributes();
+        try {
+            boolean trackedEntityResolved = this.resolveTrackedEntityInstance();
+            if (trackedEntityResolved) {
+                //resolving data elements
+                this.resolveEventAttributes();
 
+                //resolve program and program stage
+                this.sendingEvent.setProgram(this.eventTrip.getEventRoute().getDestination().getDhis2InstanceProgram().getId());
+                this.sendingEvent.setProgramStage(this.eventTrip.getEventRoute().getDestination().getId());
 
-            //resolve program and program stage
-            this.sendingEvent.setProgram(this.eventTrip.getEventRoute().getDestination().getDhis2InstanceProgram().getId());
-            this.sendingEvent.setProgramStage(this.eventTrip.getEventRoute().getDestination().getId());
-
-            this.transferEvent();
+                this.transferEvent();
+                logger.debug("Event trip processing handler  of {} returned without issues. Final status {}",
+                        eventTrip.getId(), eventTrip.getLatestTransformation().getCurrentStatus());
+            }
+        } catch (Exception ex) {
+            logger.error("Error in handling event trip {}", eventTrip.getId(), ex);
+            eventTripService.transformStatus(eventTrip, EventTripStatus.ERROR_IN_HANDLING_TRIP, ex.getMessage());
         }
-        this.eventTripService.save(this.eventTrip);
-        return this.eventTrip;
+        return this.eventTripService.save(this.eventTrip);
     }
 }

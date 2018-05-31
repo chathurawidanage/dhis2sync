@@ -7,12 +7,18 @@ import com.cwidanage.dhis2.common.models.sync.Syncability;
 import com.cwidanage.dhis2.common.models.sync.dhis2.DHIS2InstanceDataElement;
 import com.cwidanage.dhis2.common.repositories.dhis2.DHIS2InstanceDataElementRepository;
 import com.cwidanage.dhis2.common.services.SyncDataElementService;
+import org.mapdb.DB;
+import org.mapdb.DBMaker;
+import org.mapdb.HTreeMap;
+import org.mapdb.Serializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PreDestroy;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Chathura Widanage
@@ -26,6 +32,20 @@ public class DHIS2InstanceDataElementService {
     @Autowired
     private SyncDataElementService syncDataElementService;
 
+    private DB dataElementDB = DBMaker
+            .memoryDB().make();
+
+
+    private HTreeMap<String, String> dataElementsMap = dataElementDB.hashMap("dataElementsMap", Serializer.STRING, Serializer.STRING)
+            .expireMaxSize(1000)
+            .create();
+
+    @PreDestroy
+    public void destroy() {
+        this.dataElementDB.close();
+    }
+
+
     public Map<String, DHIS2InstanceDataElement> getDataElementMap(DHIS2Instance dhis2Instance) {
         Iterable<DHIS2InstanceDataElement> dataElementIterable = this.repository.findByDhis2Instance(dhis2Instance);
         final Map<String, DHIS2InstanceDataElement> dataElementMap = new HashMap<>();
@@ -33,11 +53,22 @@ public class DHIS2InstanceDataElementService {
         return dataElementMap;
     }
 
-    public DHIS2InstanceDataElement getDestinationDHIS2DataElement(DHIS2Instance sourceInstance, String sourceDataElementId, DHIS2Instance destinationInstance) {
+    public DHIS2InstanceDataElement getDestinationDHIS2DataElement(DHIS2Instance sourceInstance,
+                                                                   String sourceDataElementId,
+                                                                   DHIS2Instance destinationInstance) {
+
+        String uniqueKey = String.format("%s_%s_%s", sourceInstance.getId(), sourceDataElementId, destinationInstance.getId());
+        if (dataElementsMap.containsKey(uniqueKey)) {
+            return this.repository.findOne(dataElementsMap.get(uniqueKey));
+        }
+
         DHIS2InstanceDataElement sourceDataElement = this.repository.findDistinctByDhis2InstanceAndId(sourceInstance, sourceDataElementId);
         if (sourceDataElement != null && sourceDataElement.getSyncDataElement() != null) {
-            return this.repository.findDistinctByDhis2InstanceAndSyncDataElement(destinationInstance, sourceDataElement.getSyncDataElement());
+            DHIS2InstanceDataElement dataElement = this.repository.findDistinctByDhis2InstanceAndSyncDataElement(destinationInstance, sourceDataElement.getSyncDataElement());
+            dataElementsMap.put(uniqueKey, dataElement.getIdentifier());
+            return dataElement;
         }
+
         return null;
     }
 
