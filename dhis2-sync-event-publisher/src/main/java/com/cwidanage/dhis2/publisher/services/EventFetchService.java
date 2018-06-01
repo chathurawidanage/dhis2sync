@@ -16,7 +16,6 @@ import org.mapdb.Serializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -29,6 +28,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -67,6 +68,8 @@ public class EventFetchService {
             .expireAfterCreate(1, TimeUnit.DAYS)
             .create();
 
+    private ExecutorService executor = Executors.newCachedThreadPool();
+
     @PreDestroy
     public void onDestroy() {
         this.slowDB.close();
@@ -101,9 +104,9 @@ public class EventFetchService {
                 uriComponentsBuilder.replaceQueryParam("lastUpdatedStartDate", lastFetchedDate);
 
                 int pageToFetch = 1;
-                int totalPages;
+                int totalPages = 0;
                 do {
-                    logger.debug("Fetching page {} of events from {}", pageToFetch, lastFetchedDate);
+                    logger.debug("Fetching page {} / {} of events from {}", pageToFetch, totalPages, lastFetchedDate);
                     EventsResponse eventsResponse = this.fetchPage(uriComponentsBuilder, pageToFetch);
                     totalPages = eventsResponse.getPager().getPageCount();
                     pageToFetch = eventsResponse.getPager().getPage() + 1;
@@ -125,16 +128,18 @@ public class EventFetchService {
     }
 
     public void processEventResponse(EventsResponse eventsResponse) {
-        List<TransmittableEvent> transmittableEvents = eventsResponse.getEvents()
-                .stream()
-                .filter(this::shouldProcessEvent)
-                .map(event -> new TransmittableEvent(event, this.configuration.getInstanceId()))
-                .collect(Collectors.toList());
-        logger.debug("Filtered out {} already sent events out of {}", eventsResponse.getEvents().size() - transmittableEvents.size(), eventsResponse.getEvents().size());
-        transmittableEventService.save(transmittableEvents);
+        executor.submit(() -> {
+            List<TransmittableEvent> transmittableEvents = eventsResponse.getEvents()
+                    .stream()
+                    .filter(this::shouldProcessEvent)
+                    .map(event -> new TransmittableEvent(event, this.configuration.getInstanceId()))
+                    .collect(Collectors.toList());
+            logger.debug("Filtered out {} already sent events out of {}", eventsResponse.getEvents().size() - transmittableEvents.size(), eventsResponse.getEvents().size());
+            transmittableEventService.save(transmittableEvents);
 
-        //adding to cache
-        transmittableEvents.forEach(transmittableEvent -> this.putInCache(transmittableEvent.getEvent().getEvent()));
+            //adding to cache
+            transmittableEvents.forEach(transmittableEvent -> this.putInCache(transmittableEvent.getEvent().getEvent()));
+        });
     }
 
     private Date getOneDayLessToday() {

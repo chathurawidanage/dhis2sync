@@ -25,7 +25,7 @@ import org.springframework.jms.config.JmsListenerContainerFactory;
 import org.springframework.jms.support.converter.MappingJackson2MessageConverter;
 import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.jms.support.converter.MessageType;
-import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.web.client.RestTemplate;
 
 import javax.jms.ConnectionFactory;
@@ -58,6 +58,13 @@ public class PublisherClient {
     public static void main(String[] args) {
         System.setProperty("spring.config.name", "publisher-service");
         SpringApplication.run(PublisherClient.class, args);
+    }
+
+    @Bean
+    public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
+        ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
+        threadPoolTaskScheduler.setPoolSize(4);
+        return threadPoolTaskScheduler;
     }
 
     @Bean
