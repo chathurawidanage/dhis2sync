@@ -19,9 +19,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 import java.util.stream.Collectors;
 
 /**
@@ -41,33 +39,38 @@ public class TrackedEntityInstanceFetchService {
     @Autowired
     private RestTemplate restTemplate;
 
-    private ExecutorService dhi2InstanceConnectionTrottler = Executors.newFixedThreadPool(500);
+    //to prevent underlying DHIS2 instance from overloading
+    private Semaphore dhis2ConnectionTrottler = new Semaphore(100);
 
     public TrackedEntityInstanceQueryResponse fetchByTEIId(String teiId) {
-        logger.debug("Request received to query TEI with TeiID {}", teiId);
-        UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUriString(dhis2ApiEndpoint);
-        uriComponentsBuilder.pathSegment("trackedEntityInstances", teiId + ".json");
-
         try {
-            ResponseEntity<TrackedEntityInstance> entity = dhi2InstanceConnectionTrottler.submit(() -> restTemplate.getForEntity(uriComponentsBuilder.toUriString(),
-                    TrackedEntityInstance.class)).get();
+            dhis2ConnectionTrottler.acquire();
+            logger.debug("Request received to query TEI with TeiID {}", teiId);
+            UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUriString(dhis2ApiEndpoint);
+            uriComponentsBuilder.pathSegment("trackedEntityInstances", teiId + ".json");
+            ResponseEntity<TrackedEntityInstance> entity = restTemplate.getForEntity(uriComponentsBuilder.toUriString(),
+                    TrackedEntityInstance.class);
             TrackedEntityInstance trackedEntityInstance = entity.getBody();
             return this.createTrackedEntityInstanceResponse(trackedEntityInstance);
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException e) {
             logger.error("Error occurred when waiting for the TEI data in queue", e);
             throw new TrackedEntityInstanceDataFetchTimeoutException("Error occurred when waiting for the TEI data in queue");
+        } finally {
+            dhis2ConnectionTrottler.release();
         }
     }
 
     public TrackedEntityInstanceQueryResponse fetchByAttributeValue(String attributeValue) {
-        logger.debug("Request received to query TEI with attribute {}", attributeValue);
-        UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUriString(dhis2ApiEndpoint);
-        uriComponentsBuilder.pathSegment("trackedEntityInstances.json");
-        uriComponentsBuilder.queryParam("ouMode", "ACCESSIBLE");
-        uriComponentsBuilder.queryParam("filter", String.format("%s:EQ:%s", this.configuration.getTrackedEntityIdentifier(), attributeValue));
         try {
-            ResponseEntity<TrackedEntityInstanceResponse> responseEntity = dhi2InstanceConnectionTrottler.submit(() -> restTemplate.getForEntity(uriComponentsBuilder.toUriString(),
-                    TrackedEntityInstanceResponse.class)).get();
+            this.dhis2ConnectionTrottler.acquire();
+            logger.debug("Request received to query TEI with attribute {}", attributeValue);
+            UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUriString(dhis2ApiEndpoint);
+            uriComponentsBuilder.pathSegment("trackedEntityInstances.json");
+            uriComponentsBuilder.queryParam("ouMode", "ACCESSIBLE");
+            uriComponentsBuilder.queryParam("filter", String.format("%s:EQ:%s", this.configuration.getTrackedEntityIdentifier(), attributeValue));
+
+            ResponseEntity<TrackedEntityInstanceResponse> responseEntity = restTemplate.getForEntity(uriComponentsBuilder.toUriString(),
+                    TrackedEntityInstanceResponse.class);
 
             List<TrackedEntityInstance> trackedEntityInstances = responseEntity.getBody().getTrackedEntityInstances();
             if (trackedEntityInstances.isEmpty()) {
@@ -82,9 +85,11 @@ public class TrackedEntityInstanceFetchService {
                 logger.debug("TEI {} found for attribute value {}", trackedEntityInstance.getTrackedEntityInstance(), attributeValue);
                 return this.createTrackedEntityInstanceResponse(trackedEntityInstance);
             }
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException e) {
             logger.error("Error occurred when waiting for the TEI data in queue", e);
             throw new TrackedEntityInstanceDataFetchTimeoutException("Error occurred when waiting for the TEI data in queue");
+        } finally {
+            this.dhis2ConnectionTrottler.release();
         }
     }
 
