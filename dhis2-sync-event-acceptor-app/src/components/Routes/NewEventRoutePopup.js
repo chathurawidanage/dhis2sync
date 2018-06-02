@@ -23,6 +23,18 @@ export default class NewEventRoutePopup extends React.Component {
         }
     }
 
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.isOpen !== this.props.isOpen) {
+            this.setState({
+                sourceInstanceId: undefined,
+                sourceProgramStage: undefined,
+                destinationInstanceId: undefined,
+                destinationProgramStage: undefined,
+                name: ''
+            });
+        }
+    }
+
 
     setSavingInProgress = (inProgress) => {
         this.setState({

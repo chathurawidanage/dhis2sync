@@ -25,12 +25,12 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.PreDestroy;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
@@ -106,25 +106,52 @@ public class EventFetchService {
                 uriComponentsBuilder.replaceQueryParam("programStage", programStage.getId());
                 uriComponentsBuilder.replaceQueryParam("lastUpdatedStartDate", lastFetchedDate);
 
-                int pageToFetch = 1;
-                int totalPages = 0;
-                do {
-                    try {
-                        this.dhis2ConnectionTrottler.acquire();
-                        logger.debug("Fetching page {} / {} of events from {}", pageToFetch, totalPages, lastFetchedDate);
-                        EventsResponse eventsResponse = this.fetchPage(uriComponentsBuilder, pageToFetch);
-                        totalPages = eventsResponse.getPager().getPageCount();
-                        pageToFetch = eventsResponse.getPager().getPage() + 1;
-                        processEventResponse(eventsResponse);
-                    } catch (InterruptedException e) {
-                        logger.error("Error in fetching events of page {} of {}. Will retry the same page...", pageToFetch, programStage.getId());
-                    } finally {
-                        this.dhis2ConnectionTrottler.release();
-                    }
-                } while (pageToFetch < totalPages);
+                //doing the first fetch
+                EventsResponse initialEventsResponse = this.fetchPage(uriComponentsBuilder, 1);
+                int totalPages = initialEventsResponse.getPager().getPageCount();
 
-                logger.debug("Setting next fetch date of {} to {}", programStage.getId(), nextFetchDate);
-                settingService.setValue(SETTING_LAST_FETCHED_DATE + "_" + programStage.getId(), nextFetchDate);
+                final AtomicInteger atomicInteger = new AtomicInteger();
+                List<Future<Boolean>> fetchFutures = new ArrayList<>();
+                while (atomicInteger.get() < totalPages) {
+                    final int pageToFetch = atomicInteger.get();
+                    Future<Boolean> submit = executor.submit(() -> {
+                        try {
+                            dhis2ConnectionTrottler.acquire();
+                            logger.debug("Fetching page {} of {} program {} from {}", pageToFetch, totalPages, programStage.getId(), lastFetchedDate);
+                            EventsResponse eventsResponse = this.fetchPage(uriComponentsBuilder, pageToFetch);
+                            processEventResponse(eventsResponse);
+                            return true;
+                        } catch (InterruptedException in) {
+                            logger.error("Error in fetching events of page {} of {}. Will retry the same page...", pageToFetch, programStage.getId());
+                            return false;
+                        } finally {
+                            dhis2ConnectionTrottler.release();
+                        }
+                    });
+                    fetchFutures.add(submit);
+                }
+
+                //process first eventResponse in the same thread
+                processEventResponse(initialEventsResponse);
+
+                boolean successful = true;
+                //wait till finish
+                for (Future<Boolean> fetchFuture : fetchFutures) {
+                    try {
+                        successful = successful && fetchFuture.get();
+                    } catch (Exception e) {
+                        logger.error("Found an unsuccessful page in TEI fetch");
+                        successful = false;
+                    }
+                }
+
+                if (successful) {
+                    logger.debug("Setting next fetch date of {} to {}", programStage.getId(), nextFetchDate);
+                    settingService.setValue(SETTING_LAST_FETCHED_DATE + "_" + programStage.getId(), nextFetchDate);
+                } else {
+                    //keeping the same date.. Already fetched events will be handled by cache.. missing will be re-fetched..
+                    logger.debug("Keeping the next fetch data as it is on {}", lastFetchedDate);
+                }
             });
         });
     }
@@ -138,18 +165,16 @@ public class EventFetchService {
     }
 
     public void processEventResponse(EventsResponse eventsResponse) {
-        executor.submit(() -> {
-            List<TransmittableEvent> transmittableEvents = eventsResponse.getEvents()
-                    .stream()
-                    .filter(this::shouldProcessEvent)
-                    .map(event -> new TransmittableEvent(event, this.configuration.getInstanceId()))
-                    .collect(Collectors.toList());
-            logger.debug("Filtered out {} already sent events out of {}", eventsResponse.getEvents().size() - transmittableEvents.size(), eventsResponse.getEvents().size());
-            transmittableEventService.save(transmittableEvents);
+        List<TransmittableEvent> transmittableEvents = eventsResponse.getEvents()
+                .stream()
+                .filter(this::shouldProcessEvent)
+                .map(event -> new TransmittableEvent(event, this.configuration.getInstanceId()))
+                .collect(Collectors.toList());
+        logger.debug("Filtered out {} already sent events out of {}", eventsResponse.getEvents().size() - transmittableEvents.size(), eventsResponse.getEvents().size());
+        transmittableEventService.save(transmittableEvents);
 
-            //adding to cache
-            transmittableEvents.forEach(transmittableEvent -> this.putInCache(transmittableEvent.getEvent().getEvent()));
-        });
+        //adding to cache
+        transmittableEvents.forEach(transmittableEvent -> this.putInCache(transmittableEvent.getEvent().getEvent()));
     }
 
     private Date getOneDayLessToday() {

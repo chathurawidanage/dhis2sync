@@ -12,11 +12,14 @@ import EventTripsCard from "./EventTripsCard";
 
 const STATUS_COLOR_MAP = {
     INITIALIZED: "#F9A825",
+    SCHEDULED_FOR_PROCESSING: "#EF6C00",
     WAITING_FOR_TEI_DATA: "#0277BD",
     WAITING_FOR_EVENT_TRANSFORMATION_DATA: "#6A1B9A",
     UPSTREAM_OFFLINE: "#455A64",
     DOWNSTREAM_OFFLINE: "#616161",
-    REJECTED_BY_DOWNSTREAM: "#c62828",
+    REJECTED_BY_DOWNSTREAM: "#ef5350",
+    ERROR_IN_HANDLING_TRIP: "#c62828",
+    TIME_OUT_PROCESSING: "#AD1457",
     COMPLETED: "#2E7D32"
 };
 
@@ -194,9 +197,9 @@ export default class EventRoute extends React.Component {
                                                                         this.changeTripState(key)
                                                                     }}/>
                                                             {/*<Button text="Reinitialize" small={true} icon="repeat"*/}
-                                                                    {/*onClick={() => {*/}
-                                                                        {/*this.changeTripState(key)*/}
-                                                                    {/*}}/>*/}
+                                                            {/*onClick={() => {*/}
+                                                            {/*this.changeTripState(key)*/}
+                                                            {/*}}/>*/}
                                                         </td>
                                                     </tr>
                                                 )
