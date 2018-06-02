@@ -14,13 +14,13 @@ import com.cwidanage.dhis2.common.services.EventTripService;
 import com.cwidanage.dhis2.common.services.dhis2.DHIS2InstanceDataElementService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.persistence.NonUniqueResultException;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
@@ -94,7 +94,7 @@ public class AsyncEventTripHandler implements Callable<EventTrip> {
             this.eventTripService.transformStatus(this.eventTrip, EventTripStatus.DOWNSTREAM_OFFLINE,
                     "Couldn't query for TEI in destination : " + restEx.getMessage());
             return false;
-        } catch (NonUniqueResultException nonUex) {
+        } catch (IncorrectResultSizeDataAccessException ex) {
             logger.error("Found multiple TEIs for the same unique attribute value {} in {}",
                     sourceInstanceTEI.getTrackedEntityInstanceIdentifier().getId(), destinationInstance.getId());
             this.eventTripService.transformStatus(this.eventTrip, EventTripStatus.ERROR_IN_HANDLING_TRIP,
