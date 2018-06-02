@@ -49,7 +49,7 @@ public class EventFetchService {
     private RestTemplate restTemplate;
 
     @Value("${dhis2.apiEndPoint}")
-    String dhis2ApiEndpoint;
+    private String dhis2ApiEndpoint;
 
     @Autowired
     private Configuration configuration;

@@ -32,6 +32,10 @@ export default class EventTripsCard extends React.Component {
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.state !== this.props.state) {
+            this.setState({
+                number: 0,
+                totalPages: 1
+            });
             this.loadTrips(nextProps);
         }
     }

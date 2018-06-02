@@ -28,3 +28,6 @@ spring:
 # HTTP Server
 server:
   port: 2223   # HTTP (Tomcat) port
+
+config:
+  max-event-handlers: 25000

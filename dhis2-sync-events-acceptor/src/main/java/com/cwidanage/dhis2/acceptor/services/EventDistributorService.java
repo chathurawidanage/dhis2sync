@@ -6,6 +6,7 @@ import com.cwidanage.dhis2.common.services.dhis2.DHIS2InstanceDataElementService
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -21,7 +22,8 @@ public class EventDistributorService {
 
     private final Logger logger = LogManager.getLogger(EventDistributorService.class);
 
-    private final int CONCURRENCY = 1000;
+    @Value("${config.max-event-handlers}")
+    private int concurrency;
 
     @Autowired
     private EventTripService eventTripService;
@@ -38,7 +40,7 @@ public class EventDistributorService {
 
     @Scheduled(fixedDelay = 1000)
     public void distributeNewEvent() {
-        if (executor.getActiveCount() > CONCURRENCY) {
+        if (executor.getActiveCount() > concurrency) {
             logger.debug("Too many concurrent tasks sleeping distributor for 10 seconds");
             try {
                 Thread.sleep(10000);
