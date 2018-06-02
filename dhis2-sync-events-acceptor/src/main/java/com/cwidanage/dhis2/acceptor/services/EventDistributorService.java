@@ -1,9 +1,7 @@
 package com.cwidanage.dhis2.acceptor.services;
 
-import com.cwidanage.dhis2.common.constants.EventTripStatus;
 import com.cwidanage.dhis2.common.models.sync.EventTrip;
 import com.cwidanage.dhis2.common.services.EventTripService;
-import com.cwidanage.dhis2.common.services.dhis2.DHIS2EventService;
 import com.cwidanage.dhis2.common.services.dhis2.DHIS2InstanceDataElementService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -11,12 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.*;
-import java.util.stream.Stream;
 
 /**
  * @author Chathura Widanage
@@ -36,17 +30,15 @@ public class EventDistributorService {
     private TrackedEntityInstanceService trackedEntityInstanceService;
 
     @Autowired
-    private DHIS2EventService dhis2EventService;
-
-    @Autowired
     private DHIS2InstanceDataElementService dhis2InstanceDataElementService;
 
-    private ExecutorService executor = Executors.newCachedThreadPool();
+    private ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+
+    private ScheduledExecutorService timeoutExecutor = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors());
 
     @Scheduled(fixedDelay = 1000)
     public void distributeNewEvent() {
-        ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) executor;
-        if (threadPoolExecutor.getActiveCount() > CONCURRENCY) {
+        if (executor.getActiveCount() > CONCURRENCY) {
             logger.debug("Too many concurrent tasks sleeping distributor for 10 seconds");
             try {
                 Thread.sleep(10000);
@@ -57,15 +49,19 @@ public class EventDistributorService {
         }
 
         Iterable<EventTrip> newEventTrips = this.eventTripService.getNewEventTrips();
-        Map<EventTrip, Future<EventTrip>> eventTripFutures = new HashMap<>();
-        newEventTrips.forEach(eventTrip -> eventTripFutures.put(
-                eventTrip,
-                executor.submit(new AsyncEventTripHandler(
-                        eventTrip,
-                        trackedEntityInstanceService,
-                        eventTripService,
-                        dhis2EventService,
-                        dhis2InstanceDataElementService
-                ))));
+        newEventTrips.forEach(eventTrip -> {
+
+            Future<EventTrip> eventTripFuture = executor.submit(new AsyncEventTripHandler(
+                    eventTrip,
+                    trackedEntityInstanceService,
+                    eventTripService,
+                    dhis2InstanceDataElementService
+            ));
+
+            //timeout tasks in 5 minutes if blocking
+            timeoutExecutor.schedule(() -> {
+                eventTripFuture.cancel(true);
+            }, 5, TimeUnit.MINUTES);
+        });
     }
 }

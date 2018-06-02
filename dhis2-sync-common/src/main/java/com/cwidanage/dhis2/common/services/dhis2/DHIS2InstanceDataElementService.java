@@ -65,8 +65,10 @@ public class DHIS2InstanceDataElementService {
         DHIS2InstanceDataElement sourceDataElement = this.repository.findDistinctByDhis2InstanceAndId(sourceInstance, sourceDataElementId);
         if (sourceDataElement != null && sourceDataElement.getSyncDataElement() != null) {
             DHIS2InstanceDataElement dataElement = this.repository.findDistinctByDhis2InstanceAndSyncDataElement(destinationInstance, sourceDataElement.getSyncDataElement());
-            dataElementsMap.put(uniqueKey, dataElement.getIdentifier());
-            return dataElement;
+            if (dataElement != null) {
+                dataElementsMap.put(uniqueKey, dataElement.getIdentifier());
+                return dataElement;
+            }
         }
 
         return null;

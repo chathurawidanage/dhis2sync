@@ -34,10 +34,23 @@ public class EventTripService {
             eventTripStatusTransformation.setPreviousStatus(eventTrip.getLatestTransformation().getCurrentStatus());
         }
 
+        //saving
         eventTripStatusTransformation = statusTransformationRepository.save(eventTripStatusTransformation);
+
+        //setting
         eventTrip.setLatestTransformation(eventTripStatusTransformation);
 
         //eventTrip.getEventTripStatusTransformations().add(eventTripStatusTransformation);
+    }
+
+    public void reinitializeAll(EventTripStatus eventTripStatus, String routeId) {
+        try (Stream<EventTrip> tripStream = this.repository
+                .streamAllByLatestTransformation_CurrentStatusAndEventRoute_Id(eventTripStatus, routeId)) {
+            tripStream.forEach(eventTrip -> {
+                this.transformStatus(eventTrip, EventTripStatus.INITIALIZED, "Reinitialized manually");
+                this.save(eventTrip);
+            });
+        }
     }
 
     /**

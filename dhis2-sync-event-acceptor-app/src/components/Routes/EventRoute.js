@@ -189,9 +189,14 @@ export default class EventRoute extends React.Component {
                                                         <td>{key}</td>
                                                         <td>{this.state.stats[key]}</td>
                                                         <td>
-                                                            <Button text="Explore" small={true} onClick={() => {
-                                                                this.changeTripState(key)
-                                                            }}/>
+                                                            <Button text="Explore" small={true} icon="eye-open"
+                                                                    onClick={() => {
+                                                                        this.changeTripState(key)
+                                                                    }}/>
+                                                            {/*<Button text="Reinitialize" small={true} icon="repeat"*/}
+                                                                    {/*onClick={() => {*/}
+                                                                        {/*this.changeTripState(key)*/}
+                                                                    {/*}}/>*/}
                                                         </td>
                                                     </tr>
                                                 )
@@ -202,7 +207,10 @@ export default class EventRoute extends React.Component {
                                     <div>
                                         <Doughnut
                                             options={{
-                                                maintainAspectRatio: false
+                                                maintainAspectRatio: false,
+                                                animation: {
+                                                    duration: 0
+                                                }
                                             }}
                                             data={chartData} height={350}
                                         />

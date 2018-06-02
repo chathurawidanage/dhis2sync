@@ -1,5 +1,6 @@
 package com.cwidanage.dhis2.common.models;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
@@ -10,6 +11,7 @@ import javax.persistence.Id;
 public class Setting {
 
     @Id
+    @Column(name = "ref")
     private String key;
     private String value;
 

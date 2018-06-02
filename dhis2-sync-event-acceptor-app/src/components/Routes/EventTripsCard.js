@@ -4,7 +4,7 @@ import axios from "axios";
 import {getUrl} from "../../Constants";
 import {showErrorToast, showSuccessToast} from "../../utils/ToastUtils";
 import {extractAxiosError} from "../../utils/AxiosUtils";
-import {Button} from "@blueprintjs/core/lib/cjs/components/button/buttons";
+import {Button, ButtonGroup} from "@blueprintjs/core";
 import LoadingComponent from "../common/LoadingComponent";
 
 export default class EventTripsCard extends React.Component {
@@ -15,9 +15,16 @@ export default class EventTripsCard extends React.Component {
             loading: false,
             trips: [],
             number: 0,
-            totalPages: 1
+            totalPages: 1,
+            reinitializingTrips: false
         };
     }
+
+    setReinitializingTrips = (reinitializing) => {
+        this.setState({
+            reinitializingTrips: reinitializing
+        })
+    };
 
     componentDidMount() {
         this.loadTrips();
@@ -30,6 +37,7 @@ export default class EventTripsCard extends React.Component {
     }
 
     loadTrips = (props = this.props) => {
+        console.log(props, this.props);
         this.setState({loading: true, trips: []});
         axios.get(getUrl(`eventTrips?page=${this.state.number}&routeId=${props.route}&status=${props.state}`))
             .then(response => {
@@ -39,6 +47,7 @@ export default class EventTripsCard extends React.Component {
             .catch(err => {
                 console.error("Error in loading trips", err);
                 showErrorToast(`Error in loading trips : ${extractAxiosError(err)}`);
+                this.setState({loading: false})
             });
     };
 
@@ -54,11 +63,58 @@ export default class EventTripsCard extends React.Component {
             })
     };
 
+    reInitializeAllTrips = () => {
+        this.setReinitializingTrips(true);
+        axios.post(getUrl(`eventTrips/reinitialize?routeId=${this.props.route}&status=${this.props.state}`))
+            .then(response => {
+                showSuccessToast("Trips reinitialized successfully");
+                this.setReinitializingTrips(false);
+                this.loadTrips();
+            })
+            .catch(err => {
+                console.log("Error in reinitializing", err);
+                showErrorToast(`Error in reinitializing trips with state ${this.props.state}: ${extractAxiosError(err)}`);
+                this.setReinitializingTrips(false);
+            })
+    };
+
+    loadNextPage = () => {
+        if (this.state.number < this.state.totalPages - 1) {
+            this.setState({
+                number: this.state.number + 1
+            }, this.loadTrips)
+        }
+    };
+
+    loadPreviousPage = () => {
+        if (this.state.number > 1) {
+            this.setState({
+                number: this.state.number - 1
+            }, this.loadTrips)
+        }
+    };
+
     render() {
         return (
             <Card>
                 <h5>{this.props.state}</h5>
                 <LoadingComponent loading={this.state.loading}>
+                    <div className="pt-align-right text-right">
+                        <ButtonGroup>
+                            <Button text="Reinitialize All" onClick={this.reInitializeAllTrips} icon="repeat"
+                                    loading={this.state.reinitializingTrips}/>
+                            <Button text="Refresh" onClick={() => {
+                                this.loadTrips()
+                            }} icon="refresh"/>
+                            <Button icon="chevron-left" disabled={this.state.number < 1}
+                                    onClick={this.loadPreviousPage}/>
+                            <Button icon="chevron-right" disabled={this.state.number >= this.state.totalPages - 1}
+                                    onClick={this.loadNextPage}/>
+                        </ButtonGroup>
+                    </div>
+                    <div className="pt-align-right text-right" style={{marginTop: 5}}>
+                        Showing Page {this.state.number + 1} of {this.state.totalPages}
+                    </div>
                     <table className="pt-html-table pt-html-table-striped pt-fill" width="100%">
                         <thead>
                         <tr>

@@ -2,20 +2,21 @@
 spring:
   application:
      name: publisher-service
-  h2:
-     console:
-        enabled: true
-        path: /h2
   datasource:
-      url: jdbc:h2:file:~/dhis2-sync-client
-      username: admin
-      password: admin
-      driver-class-name: org.h2.Driver
+        url: jdbc:mysql://localhost:3306/dnms_server?autoReconnect=true&useSSL=false
+        username: root
+        password:
+        type: com.zaxxer.hikari.HikariDataSource
+        hikari:
+          max-await: 10000
+          max-active: 200
+          test-on-borrow: true
   activemq:
         broker-url: tcp://localhost:61616
         user: admin
         password: admin
   jpa:
+      database: mysql
       hibernate:
         ddl-auto: update
 

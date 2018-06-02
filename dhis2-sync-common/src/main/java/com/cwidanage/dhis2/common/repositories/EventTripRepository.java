@@ -17,7 +17,7 @@ public interface EventTripRepository extends CrudRepository<EventTrip, String> {
 
     Iterable<EventTrip> findTop200ByLatestTransformation_CurrentStatusOrderByLastUpdate(EventTripStatus eventTripStatus);
 
-    Stream<EventTrip> streamAllByLatestTransformation_CurrentStatusOrderByLastUpdate(EventTripStatus eventTripStatus);
+    Stream<EventTrip> streamAllByLatestTransformation_CurrentStatusAndEventRoute_Id(EventTripStatus eventTripStatus, String routeId);
 
     Page<EventTrip> findAllByEventRoute_IdAndLatestTransformation_CurrentStatusOrderByLastUpdateDesc(String eventRouteId, EventTripStatus eventTripStatus, Pageable pageable);
 

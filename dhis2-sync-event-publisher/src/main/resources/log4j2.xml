@@ -11,18 +11,16 @@
         <Console name="STDOUT" target="SYSTEM_OUT" ignoreExceptions="false">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
         </Console>
-        <Failover name="Failover" primary="RollingFile">
-            <Failovers>
-                <AppenderRef ref="Console"/>
-            </Failovers>
-        </Failover>
     </Appenders>
     <Loggers>
-        <Logger name="com.cwidanage" level="debug">
+        <AsyncLogger name="com.cwidanage" level="debug">
             <AppenderRef ref="STDOUT"/>
-        </Logger>
-        <Root level="info">
+        </AsyncLogger>
+        <AsyncLogger name="org.springframework" level="info">
+            <AppenderRef ref="STDOUT"/>
+        </AsyncLogger>
+        <AsyncRoot level="info">
             <AppenderRef ref="RollingFile"/>
-        </Root>
+        </AsyncRoot>
     </Loggers>
 </Configuration>

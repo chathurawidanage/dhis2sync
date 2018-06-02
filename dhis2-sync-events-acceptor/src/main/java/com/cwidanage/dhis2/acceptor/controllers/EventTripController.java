@@ -6,6 +6,7 @@ import com.cwidanage.dhis2.common.services.EventTripService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -27,6 +28,12 @@ public class EventTripController {
     @RequestMapping(value = {"{eventTripId}/reinitialize", "{eventTripId}/reinitialize/"}, method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public EventTrip reinitialize(@PathVariable("eventTripId") String eventTripId) {
         return this.eventTripService.reInitializeTrip(eventTripId);
+    }
+
+    @Transactional
+    @RequestMapping(value = {"reinitialize", "reinitialize/"}, method = RequestMethod.POST, produces = MediaType.ALL_VALUE)
+    public void reinitialize(@RequestParam("routeId") String routeId, @RequestParam("status") EventTripStatus eventTripStatus) {
+        this.eventTripService.reinitializeAll(eventTripStatus, routeId);
     }
 
     @RequestMapping(value = {"count", "count/"}, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)

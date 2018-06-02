@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -33,10 +34,10 @@ public class EventPersistService {
     String dhis2ApiEndpoint;
 
     public EventPersistResponse persist(Event event) {
-        if (event.getEvent() != null && event.getEvent().equals("HIII")) {
-            event.setEvent(null);
-        }
         logger.debug("Received persist request for event {}", event.getEvent());
+        if (logger.isTraceEnabled()) {
+            logger.trace("Received persist request for event {}", event);
+        }
         UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUriString(dhis2ApiEndpoint);
         uriComponentsBuilder.path("events.json");
 
@@ -44,7 +45,7 @@ public class EventPersistService {
             ResponseEntity<EventPersistResponse> eventPersistResponseResponseEntity = restTemplate.postForEntity(uriComponentsBuilder.toUriString(), event, EventPersistResponse.class);
             logger.debug("Event persisted {}", eventPersistResponseResponseEntity.getBody());
             return eventPersistResponseResponseEntity.getBody();
-        } catch (HttpClientErrorException exe) {
+        } catch (HttpClientErrorException | HttpServerErrorException exe) {
             logger.error("Error occurred when persisting event : {}", exe.getResponseBodyAsString(), exe);
             try {
                 //try to create a response object

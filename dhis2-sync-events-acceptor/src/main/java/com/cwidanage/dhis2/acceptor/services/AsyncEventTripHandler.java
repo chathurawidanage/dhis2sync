@@ -26,6 +26,9 @@ import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
+/**
+ * @author Chathura Widanage
+ */
 public class AsyncEventTripHandler implements Callable<EventTrip> {
 
     private final Logger logger = LogManager.getLogger(AsyncEventTripHandler.class);
@@ -43,7 +46,6 @@ public class AsyncEventTripHandler implements Callable<EventTrip> {
     public AsyncEventTripHandler(EventTrip eventTrip,
                                  TrackedEntityInstanceService teiService,
                                  EventTripService eventTripService,
-                                 DHIS2EventService dhis2EventService,
                                  DHIS2InstanceDataElementService dhis2InstanceDataElementService) {
         this.eventTrip = eventTrip;
         this.restTemplate = new RestTemplate();
@@ -143,6 +145,9 @@ public class AsyncEventTripHandler implements Callable<EventTrip> {
 
     public void transferEvent() {
         logger.debug("Transferring event on trip {}", this.eventTrip.getId());
+        if (logger.isTraceEnabled()) {
+            logger.debug("Transferring event on trip {} : {}", this.eventTrip.getId(), this.sendingEvent);
+        }
         UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUriString(
                 this.eventTrip.getEventRoute().getDestination().getDhis2Instance().getUrl()
         );
