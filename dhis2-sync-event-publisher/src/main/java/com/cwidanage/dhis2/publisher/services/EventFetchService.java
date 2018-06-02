@@ -113,7 +113,7 @@ public class EventFetchService {
                 final AtomicInteger atomicInteger = new AtomicInteger();
                 List<Future<Boolean>> fetchFutures = new ArrayList<>();
                 while (atomicInteger.get() < totalPages) {
-                    final int pageToFetch = atomicInteger.get();
+                    final int pageToFetch = atomicInteger.getAndIncrement();
                     Future<Boolean> submit = executor.submit(() -> {
                         try {
                             dhis2ConnectionTrottler.acquire();
