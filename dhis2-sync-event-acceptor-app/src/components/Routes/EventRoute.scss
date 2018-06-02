@@ -13,12 +13,22 @@
 
   .event-route-stat-wrapper {
     display: grid;
-    grid-template-columns: 500px auto;
+    grid-template-columns: 50% 50%;
   }
 
   .pt-card {
     &:not(:last-of-type) {
       margin-bottom: 10px;
     }
+  }
+
+  .trips-summary-total {
+    td {
+      border-top: 1px solid rgba(16, 22, 26, 0.15) !important;
+    }
+  }
+
+  .text-bold {
+    font-weight: 500;
   }
 }

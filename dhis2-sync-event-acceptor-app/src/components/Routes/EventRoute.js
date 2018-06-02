@@ -14,9 +14,9 @@ const STATUS_COLOR_MAP = {
     INITIALIZED: "#F9A825",
     SCHEDULED_FOR_PROCESSING: "#EF6C00",
     WAITING_FOR_TEI_DATA: "#0277BD",
-    WAITING_FOR_EVENT_TRANSFORMATION_DATA: "#6A1B9A",
     UPSTREAM_OFFLINE: "#455A64",
     DOWNSTREAM_OFFLINE: "#616161",
+    WAITING_FOR_EVENT_TRANSFORMATION_DATA: "#6A1B9A",
     REJECTED_BY_DOWNSTREAM: "#ef5350",
     ERROR_IN_HANDLING_TRIP: "#c62828",
     TIME_OUT_PROCESSING: "#AD1457",
@@ -125,9 +125,9 @@ export default class EventRoute extends React.Component {
             labels: []
         };
 
-        Object.keys(this.state.stats).forEach(key => {
+        Object.keys(STATUS_COLOR_MAP).forEach(key => {
             chartData.labels.push(key);
-            chartData.datasets[0].data.push(this.state.stats[key]);
+            chartData.datasets[0].data.push(this.state.stats[key] || 0);
             chartData.datasets[0].backgroundColor.push(STATUS_COLOR_MAP[key]);
         });
 
@@ -178,19 +178,23 @@ export default class EventRoute extends React.Component {
                                         <Button text="Refresh" icon="refresh" onClick={this.loadStats}
                                                 loading={this.state.loadingStats}/>
                                         <table className="pt-html-table">
-                                            <thead>
+                                            <thead className="text-bold">
                                             <tr>
+                                                <td></td>
                                                 <td>State</td>
-                                                <td>Count</td>
+                                                <td width={200}>Count</td>
                                                 <td>Actions</td>
                                             </tr>
                                             </thead>
                                             <tbody>
-                                            {Object.keys(this.state.stats).map(key => {
+                                            {Object.keys(STATUS_COLOR_MAP).map(key => {
                                                 return (
                                                     <tr key={key}>
+                                                        <td style={{
+                                                            backgroundColor: STATUS_COLOR_MAP[key]
+                                                        }}/>
                                                         <td>{key}</td>
-                                                        <td>{this.state.stats[key]}</td>
+                                                        <td>{this.state.stats[key] || 0}</td>
                                                         <td>
                                                             <Button text="Explore" small={true} icon="eye-open"
                                                                     onClick={() => {
@@ -204,12 +208,23 @@ export default class EventRoute extends React.Component {
                                                     </tr>
                                                 )
                                             })}
+                                            <tr className="text-bold trips-summary-total">
+                                                <td></td>
+                                                <td>TOTAL</td>
+                                                <td>
+                                                    {Object.values(this.state.stats).reduce((acc, val) => {
+                                                        return acc + val;
+                                                    }, 0)}
+                                                </td>
+                                                <td/>
+                                            </tr>
                                             </tbody>
                                         </table>
                                     </div>
                                     <div>
                                         <Doughnut
                                             options={{
+                                                legend: false,
                                                 maintainAspectRatio: false,
                                                 animation: {
                                                     duration: 0

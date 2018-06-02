@@ -15,6 +15,7 @@ import com.cwidanage.dhis2.common.services.dhis2.DHIS2EventService;
 import com.cwidanage.dhis2.common.services.dhis2.DHIS2InstanceDataElementService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.NonUniqueResultException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
@@ -93,6 +94,14 @@ public class AsyncEventTripHandler implements Callable<EventTrip> {
             logger.error("Couldn't query for TEI in destination of trip {}", eventTrip.getId(), restEx);
             this.eventTripService.transformStatus(this.eventTrip, EventTripStatus.DOWNSTREAM_OFFLINE,
                     "Couldn't query for TEI in destination : " + restEx.getMessage());
+            return false;
+        } catch (NonUniqueResultException nonUex) {
+            logger.error("Found multiple TEIs for the same unique attribute value {} in {}",
+                    sourceInstanceTEI.getTrackedEntityInstanceIdentifier().getId(), destinationInstance.getId());
+            this.eventTripService.transformStatus(this.eventTrip, EventTripStatus.ERROR_IN_HANDLING_TRIP,
+                    "Found multiple TEIs for the same unique attribute value : "
+                            + sourceInstanceTEI.getTrackedEntityInstanceIdentifier().getId()
+                            + " in " + destinationInstance.getId());
             return false;
         }
 
