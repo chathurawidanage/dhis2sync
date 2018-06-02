@@ -110,7 +110,7 @@ public class EventFetchService {
                 EventsResponse initialEventsResponse = this.fetchPage(uriComponentsBuilder, 1);
                 int totalPages = initialEventsResponse.getPager().getPageCount();
 
-                final AtomicInteger atomicInteger = new AtomicInteger();
+                final AtomicInteger atomicInteger = new AtomicInteger(2);
                 List<Future<Boolean>> fetchFutures = new ArrayList<>();
                 while (atomicInteger.get() < totalPages) {
                     final int pageToFetch = atomicInteger.getAndIncrement();
