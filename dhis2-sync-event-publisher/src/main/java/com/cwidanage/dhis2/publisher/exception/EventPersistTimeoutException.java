@@ -5,9 +5,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(value = HttpStatus.TOO_MANY_REQUESTS)
-public class TrackedEntityInstanceDataFetchTimeoutException extends JobTimeoutException {
+public class EventPersistTimeoutException extends JobTimeoutException {
 
-    public TrackedEntityInstanceDataFetchTimeoutException(String msg) {
+    public EventPersistTimeoutException(String msg) {
         super(msg);
     }
 }

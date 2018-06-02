@@ -40,7 +40,8 @@ public class TrackedEntityInstanceFetchService {
     private RestTemplate restTemplate;
 
     //to prevent underlying DHIS2 instance from overloading
-    private Semaphore dhis2ConnectionTrottler = new Semaphore(100);
+    @Autowired
+    private DHIS2ConnectionTrottler dhis2ConnectionTrottler;
 
     public TrackedEntityInstanceQueryResponse fetchByTEIId(String teiId) {
         try {

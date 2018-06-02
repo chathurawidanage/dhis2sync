@@ -29,3 +29,6 @@ dhis2:
   username: dnms_sync
   password: DNMSSYNC1.
   config: config.json
+
+config:
+  max-dhis2-connections: 250

@@ -2,6 +2,7 @@ package com.cwidanage.dhis2.publisher.services;
 
 import com.cwidanage.dhis2.common.models.Event;
 import com.cwidanage.dhis2.common.models.rest.eventPersistResponse.EventPersistResponse;
+import com.cwidanage.dhis2.publisher.exception.EventPersistTimeoutException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,29 +34,40 @@ public class EventPersistService {
     @Value("${dhis2.apiEndPoint}")
     String dhis2ApiEndpoint;
 
-    public EventPersistResponse persist(Event event) {
-        logger.debug("Received persist request for event {}", event.getEvent());
-        if (logger.isTraceEnabled()) {
-            logger.trace("Received persist request for event {}", event);
-        }
-        UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUriString(dhis2ApiEndpoint);
-        uriComponentsBuilder.path("events.json");
+    @Autowired
+    private DHIS2ConnectionTrottler dhis2ConnectionTrottler;
 
+    public EventPersistResponse persist(Event event) {
         try {
-            ResponseEntity<EventPersistResponse> eventPersistResponseResponseEntity = restTemplate.postForEntity(uriComponentsBuilder.toUriString(), event, EventPersistResponse.class);
-            logger.debug("Event persisted {}", eventPersistResponseResponseEntity.getBody());
-            return eventPersistResponseResponseEntity.getBody();
-        } catch (HttpClientErrorException | HttpServerErrorException exe) {
-            logger.error("Error occurred when persisting event : {}", exe.getResponseBodyAsString(), exe);
-            try {
-                //try to create a response object
-                return objectMapper.readValue(exe.getResponseBodyAsString(), EventPersistResponse.class);
-            } catch (IOException e) {
-                EventPersistResponse eventPersistResponse = new EventPersistResponse();
-                eventPersistResponse.setHttpStatusCode(exe.getRawStatusCode());
-                eventPersistResponse.setMessage(exe.getResponseBodyAsString());
-                return eventPersistResponse;
+            this.dhis2ConnectionTrottler.acquire();
+            logger.debug("Received persist request for event {}", event.getEvent());
+            if (logger.isTraceEnabled()) {
+                logger.trace("Received persist request for event {}", event);
             }
+            UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUriString(dhis2ApiEndpoint);
+            uriComponentsBuilder.path("events.json");
+
+            try {
+                ResponseEntity<EventPersistResponse> eventPersistResponseResponseEntity = restTemplate.postForEntity(uriComponentsBuilder.toUriString(), event, EventPersistResponse.class);
+                logger.debug("Event persisted {}", eventPersistResponseResponseEntity.getBody());
+                return eventPersistResponseResponseEntity.getBody();
+            } catch (HttpClientErrorException | HttpServerErrorException exe) {
+                logger.error("Error occurred when persisting event : {}", exe.getResponseBodyAsString(), exe);
+                try {
+                    //try to create a response object
+                    return objectMapper.readValue(exe.getResponseBodyAsString(), EventPersistResponse.class);
+                } catch (IOException e) {
+                    EventPersistResponse eventPersistResponse = new EventPersistResponse();
+                    eventPersistResponse.setHttpStatusCode(exe.getRawStatusCode());
+                    eventPersistResponse.setMessage(exe.getResponseBodyAsString());
+                    return eventPersistResponse;
+                }
+            }
+        } catch (InterruptedException e) {
+            logger.error("Error in waiting in the queue to persist event {}", event.getEvent(), e);
+            throw new EventPersistTimeoutException("Interrupted while waiting in the queue to persist event");
+        } finally {
+            this.dhis2ConnectionTrottler.release();
         }
     }
 }
