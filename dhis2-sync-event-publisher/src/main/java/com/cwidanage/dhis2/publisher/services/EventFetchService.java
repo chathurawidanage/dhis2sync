@@ -60,6 +60,9 @@ public class EventFetchService {
     @Autowired
     private SettingService settingService;
 
+    @Autowired
+    private DHIS2ConnectionTrottler dhis2ConnectionTrottler;
+
     private DB slowDB = DBMaker
             .fileDB("fetchedEventsCache").make();
 
@@ -106,11 +109,18 @@ public class EventFetchService {
                 int pageToFetch = 1;
                 int totalPages = 0;
                 do {
-                    logger.debug("Fetching page {} / {} of events from {}", pageToFetch, totalPages, lastFetchedDate);
-                    EventsResponse eventsResponse = this.fetchPage(uriComponentsBuilder, pageToFetch);
-                    totalPages = eventsResponse.getPager().getPageCount();
-                    pageToFetch = eventsResponse.getPager().getPage() + 1;
-                    processEventResponse(eventsResponse);
+                    try {
+                        this.dhis2ConnectionTrottler.acquire();
+                        logger.debug("Fetching page {} / {} of events from {}", pageToFetch, totalPages, lastFetchedDate);
+                        EventsResponse eventsResponse = this.fetchPage(uriComponentsBuilder, pageToFetch);
+                        totalPages = eventsResponse.getPager().getPageCount();
+                        pageToFetch = eventsResponse.getPager().getPage() + 1;
+                        processEventResponse(eventsResponse);
+                    } catch (InterruptedException e) {
+                        logger.error("Error in fetching events of page {} of {}. Will retry the same page...", pageToFetch, programStage.getId());
+                    } finally {
+                        this.dhis2ConnectionTrottler.release();
+                    }
                 } while (pageToFetch < totalPages);
 
                 logger.debug("Setting next fetch date of {} to {}", programStage.getId(), nextFetchDate);
