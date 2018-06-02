@@ -112,7 +112,7 @@ public class EventFetchService {
 
                 final AtomicInteger atomicInteger = new AtomicInteger(2);
                 List<Future<Boolean>> fetchFutures = new ArrayList<>();
-                while (atomicInteger.get() < totalPages) {
+                while (atomicInteger.get() <= totalPages) {
                     final int pageToFetch = atomicInteger.getAndIncrement();
                     Future<Boolean> submit = executor.submit(() -> {
                         try {
