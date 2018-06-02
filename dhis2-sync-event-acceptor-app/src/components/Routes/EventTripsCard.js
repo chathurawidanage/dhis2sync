@@ -87,7 +87,7 @@ export default class EventTripsCard extends React.Component {
     };
 
     loadPreviousPage = () => {
-        if (this.state.number > 1) {
+        if (this.state.number > 0) {
             this.setState({
                 number: this.state.number - 1
             }, this.loadTrips)
