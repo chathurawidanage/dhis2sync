@@ -1,5 +1,6 @@
 package com.cwidanage.dhis2.acceptor.services;
 
+import com.cwidanage.dhis2.common.constants.EventTripStatus;
 import com.cwidanage.dhis2.common.models.sync.EventTrip;
 import com.cwidanage.dhis2.common.services.EventTripService;
 import com.cwidanage.dhis2.common.services.dhis2.DHIS2InstanceDataElementService;
@@ -52,6 +53,9 @@ public class EventDistributorService {
 
         Iterable<EventTrip> newEventTrips = this.eventTripService.getNewEventTrips();
         newEventTrips.forEach(eventTrip -> {
+            //changing the state to prevent re-picking
+            eventTripService.transformStatus(eventTrip, EventTripStatus.SCHEDULED_FOR_PROCESSING, null);
+            eventTripService.save(eventTrip);
 
             Future<EventTrip> eventTripFuture = executor.submit(new AsyncEventTripHandler(
                     eventTrip,

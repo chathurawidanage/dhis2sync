@@ -2,6 +2,7 @@ package com.cwidanage.dhis2.common.constants;
 
 public enum EventTripStatus {
     INITIALIZED,
+    SCHEDULED_FOR_PROCESSING,
     WAITING_FOR_TEI_DATA,
     WAITING_FOR_EVENT_TRANSFORMATION_DATA,
     UPSTREAM_OFFLINE,
