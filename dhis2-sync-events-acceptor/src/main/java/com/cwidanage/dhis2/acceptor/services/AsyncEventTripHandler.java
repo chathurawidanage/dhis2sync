@@ -11,17 +11,16 @@ import com.cwidanage.dhis2.common.models.sync.EventTrip;
 import com.cwidanage.dhis2.common.models.sync.dhis2.DHIS2InstanceDataElement;
 import com.cwidanage.dhis2.common.models.sync.dhis2.DHIS2InstanceTrackedEntityInstance;
 import com.cwidanage.dhis2.common.services.EventTripService;
-import com.cwidanage.dhis2.common.services.dhis2.DHIS2EventService;
 import com.cwidanage.dhis2.common.services.dhis2.DHIS2InstanceDataElementService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.NonUniqueResultException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.persistence.NonUniqueResultException;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
