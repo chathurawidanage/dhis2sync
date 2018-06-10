@@ -138,7 +138,7 @@ public class EventFetchService {
                 //wait till finish
                 for (Future<Boolean> fetchFuture : fetchFutures) {
                     try {
-                        successful = successful && fetchFuture.get();
+                        successful = fetchFuture.get() && successful;
                     } catch (Exception e) {
                         logger.error("Found an unsuccessful page in TEI fetch");
                         successful = false;
