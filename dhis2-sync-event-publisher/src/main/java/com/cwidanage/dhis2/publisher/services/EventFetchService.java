@@ -107,18 +107,21 @@ public class EventFetchService {
                 uriComponentsBuilder.replaceQueryParam("lastUpdatedStartDate", lastFetchedDate);
 
                 //doing the first fetch
-                EventsResponse initialEventsResponse = this.fetchPage(uriComponentsBuilder, 1);
+                uriComponentsBuilder.replaceQueryParam("page", 1);
+                EventsResponse initialEventsResponse = this.fetchPage(uriComponentsBuilder.toUriString());
                 int totalPages = initialEventsResponse.getPager().getPageCount();
 
                 final AtomicInteger atomicInteger = new AtomicInteger(2);
                 List<Future<Boolean>> fetchFutures = new ArrayList<>();
                 while (atomicInteger.get() <= totalPages) {
                     final int pageToFetch = atomicInteger.getAndIncrement();
+                    uriComponentsBuilder.replaceQueryParam("page", pageToFetch);
+                    final String url = uriComponentsBuilder.toUriString();
                     Future<Boolean> submit = executor.submit(() -> {
                         try {
                             dhis2ConnectionTrottler.acquire();
                             logger.debug("Fetching page {} of {} program {} from {}", pageToFetch, totalPages, programStage.getId(), lastFetchedDate);
-                            EventsResponse eventsResponse = this.fetchPage(uriComponentsBuilder, pageToFetch);
+                            EventsResponse eventsResponse = this.fetchPage(url);
                             processEventResponse(eventsResponse);
                             return true;
                         } catch (InterruptedException in) {
@@ -184,9 +187,8 @@ public class EventFetchService {
         return cal.getTime();
     }
 
-    private EventsResponse fetchPage(UriComponentsBuilder uriComponentsBuilder, int page) {
-        uriComponentsBuilder.replaceQueryParam("page", page);
-        ResponseEntity<EventsResponse> responseEntity = restTemplate.getForEntity(uriComponentsBuilder.toUriString(), EventsResponse.class);
+    private EventsResponse fetchPage(String url) {
+        ResponseEntity<EventsResponse> responseEntity = restTemplate.getForEntity(url, EventsResponse.class);
         return responseEntity.getBody();
     }
 }
