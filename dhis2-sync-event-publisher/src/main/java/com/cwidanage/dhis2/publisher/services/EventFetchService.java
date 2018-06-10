@@ -138,9 +138,9 @@ public class EventFetchService {
                 //wait till finish
                 for (Future<Boolean> fetchFuture : fetchFutures) {
                     try {
-                        successful = fetchFuture.get() && successful;
+                        successful = fetchFuture.get(3, TimeUnit.MINUTES) && successful;
                     } catch (Exception e) {
-                        logger.error("Found an unsuccessful page in TEI fetch");
+                        logger.error("Found an unsuccessful page in TEI fetch", e);
                         successful = false;
                     }
                 }
